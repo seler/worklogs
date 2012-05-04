@@ -54,11 +54,11 @@ class WorkLog(models.Model):
                     verbose_name=_(u"duration"))
 
     add_date = models.DateTimeField(
-#                    auto_now_add=True,
+                    auto_now_add=True,
                     verbose_name=_(u'date added'))
 
     mod_date = models.DateTimeField(
-#                    auto_now=True,
+                    auto_now=True,
                     verbose_name=_(u'date modified'))
 
     objects = WorkLogManager()
