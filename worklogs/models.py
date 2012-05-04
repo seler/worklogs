@@ -26,7 +26,7 @@ def firstof(*items):
 
 
 class WorkLog(models.Model):
-    active = models.BooleanField(verbose_name=_(u'active'), unique=True)
+    active = models.BooleanField(verbose_name=_(u'active'))
 
     description = models.CharField(
                     max_length=1024,
@@ -41,7 +41,7 @@ class WorkLog(models.Model):
                     related_name='worklogs')
 
     bugtracker = models.ForeignKey('BugTracker',
-                    verbose_name=_(u'project'),
+                    verbose_name=_(u'bugtracker'),
                     related_name='worklogs')
 
     bugtracker_object_id = models.CharField(
@@ -75,44 +75,38 @@ class WorkLog(models.Model):
     def get_absolute_url(self):
         return reverse('worklog', args=[self.pk])
 
-    def start(self, description):
-        if not self.active:
-            # stop active WorkLog
-            try:
-                active_worklog = self.objects.active().get()
-            except self.DoesNotExists:
-                pass
-            else:
-                active_worklog.stop()
-        else:
-            # strop active WorkLogEntry
-            active_entry = self.worklog_entries.filter(active=True).get()
-            active_entry.active = False
-            active_entry.save()
-
-        # calculate duration
-        self.duration = sum(map(lambda e: e.duration, self.worklog_entriels.all()))
+    def start(self, description=None):
+        # stop active WorkLog
+        WorkLog.objects.stop_active()
 
         # mark self active
         self.active = True
-
-        # and save
         self.save()
 
         # create new WorkLogEntry for this WorkLog
         WorkLogEntry.objects.create(worklog=self, description=description)
 
     def stop(self):
-        pass
+        try:
+            active_entry = self.worklog_entries.filter(active=True).get()
+        except WorkLogEntry.DoesNotExist:
+            pass
+        else:
+            active_entry.stop()
+
+        self.duration = sum(map(lambda e: e.duration, self.worklog_entries.all()))
+        self.active = False
+        self.save()
 
 
 class WorkLogEntry(models.Model):
     active = models.BooleanField(
             default=True,
-            unique=True,
             verbose_name=_(u'active'))
 
     description = models.CharField(
+                    blank=True,
+                    null=True,
                     max_length=1024,
                     verbose_name=_(u'description'))
 
@@ -121,9 +115,12 @@ class WorkLogEntry(models.Model):
                     related_name='worklog_entries')
 
     start = models.DateTimeField(
+                    default=datetime.datetime.now,
                     verbose_name=_(u'start time'))
 
     end = models.DateTimeField(
+                    blank=True,
+                    null=True,
                     verbose_name=_(u'end time'))
 
     class Meta:
@@ -132,12 +129,17 @@ class WorkLogEntry(models.Model):
         ordering = ('-start',)
         get_latest_by = 'start'
 
-    def __unicode__(self):
-        return self.description
+    def stop(self):
+        self.active = False
+        self.end = datetime.datetime.now()
+        self.save()
 
     @property
     def duration(self):
-        delta = self.end - self.start
+        if self.end:
+            delta = self.end - self.start
+        else:
+            delta = datetime.datetime.now() - self.start
         return int(round(delta.total_seconds()))
 
     @duration.setter
@@ -147,7 +149,7 @@ class WorkLogEntry(models.Model):
 
 class Project(models.Model):
 
-    active = models.BooleanField(verbose_name=_(u'active'), unique=True)
+    active = models.BooleanField(verbose_name=_(u'active'))
 
     name = models.CharField(
                     max_length=64,
@@ -165,7 +167,7 @@ class Project(models.Model):
 
 
 class BugTracker(models.Model):
-    active = models.BooleanField(verbose_name=_(u'active'), unique=True)
+    active = models.BooleanField(verbose_name=_(u'active'))
 
     name = models.CharField(
                     max_length=64,
