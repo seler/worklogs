@@ -1,0 +1,1 @@
+-- zmiany schematu bazy proszę wykonywać wyłącznie za pomocą south

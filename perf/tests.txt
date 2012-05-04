@@ -1,0 +1,9 @@
+# Plik zawiera aplikacje, ktore beda przetestowane w buildbocie. Kazda aplikacja w osobnej linijce.
+# aplikacje z cms
+murator_common.srv
+# aplikacje lokalne
+channels
+cms_local
+videoapi
+videos
+accounts
