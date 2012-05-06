@@ -1,0 +1,27 @@
+{% load worklogs_tags i18n %}
+<h3>worklogs per day</h3>
+<pre>
+{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+{% for date, worklogs in worklogs_per_day.items %}
+{{ date }}:
+    {% for worklog, duration in worklogs %}
+    {{ worklog.description }} ({{duration|seconds_to_time}})
+    {{ worklog.bugtracker_url }}
+    {% endfor %}
+{% endfor %}</pre>
+
+<h3>time per project</h3>
+<pre>
+{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+{% for project, data in time_per_project.items %}
+{{ project }}: {{ data.time|seconds_to_hours:2|floatformat }}h
+{% endfor %}</pre>
+
+<h3>time per worklog</h3>
+<pre>
+{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+{% for worklog, duration in time_per_worklog %}
+{{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.state }}
+{{ worklog.bugtracker_url }}
+{% endfor %}
+</pre>

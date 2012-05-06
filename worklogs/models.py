@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 
-from .managers import WorkLogManager
+from .managers import WorkLogManager, WorkLogEntryManager
 
 
 def firstof(*items):
@@ -173,6 +173,8 @@ class WorkLogEntry(models.Model):
                     blank=True,
                     null=True,
                     verbose_name=_(u'end time'))
+
+    objects = WorkLogEntryManager()
 
     class Meta:
         verbose_name = _(u'work log entry')

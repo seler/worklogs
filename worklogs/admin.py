@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponseRedirect
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from django.conf.urls.defaults import patterns, url
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from .models import WorkLog, WorkLogEntry, Project, BugTracker, State
+from .urls import worklog_admin_urls
 
 
 class WorkLogAdmin(admin.ModelAdmin):
@@ -25,6 +24,20 @@ class WorkLogAdmin(admin.ModelAdmin):
     list_filter = ('project', 'state', 'bugtracker')
     list_select_related = True
     search_fields = ('description', 'worklog_entries__description')
+
+    def get_duration_display(self, worklog):
+        kwargs = {
+            'duration_formatted': worklog.get_duration_display(),
+            'duration': worklog.duration,
+        }
+        if worklog.active:
+            return """<span class="worklog_duration d{duration}s">
+    {duration_formatted}
+</span>""".format(**kwargs)
+        else:
+            return kwargs.get('duration_formatted')
+    get_duration_display.allow_tags = True
+    get_duration_display.short_description = _(u"duration")
 
     def toggle_active_button(self, worklog):
         if worklog.active:
@@ -52,19 +65,16 @@ class WorkLogAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         urls = super(WorkLogAdmin, self).get_urls()
-        my_urls = patterns('',
-            url(r'^start/(?P<object_id>\d+)/$', self.start_view, name='worklog_start'),
-            url(r'^stop/(?P<object_id>\d+)/$', self.stop_view, name='worklog_stop'),
+        return worklog_admin_urls + urls
+
+    class Media:
+        css = {
+            "all": ("styles/worklog.css",)
+        }
+        js = (
+            "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js",
+            "scripts/worklog.js",
         )
-        return my_urls + urls
-
-    def start_view(self, request, object_id):
-        WorkLog.objects.get(id=object_id).start()
-        return HttpResponseRedirect('/admin/worklogs/worklog/')
-
-    def stop_view(self, request, object_id):
-        WorkLog.objects.get(id=object_id).stop()
-        return HttpResponseRedirect('/admin/worklogs/worklog/')
 
 
 admin.site.register(WorkLog, WorkLogAdmin)
