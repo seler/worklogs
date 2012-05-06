@@ -4,19 +4,11 @@
 import datetime
 
 # importy z django
-from django.conf import settings
-from django.core.files.storage import get_storage_class
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
-from django.contrib.contenttypes.models import ContentType
 
 from .managers import WorkLogManager
-
-
-safe_storage_class = get_storage_class(settings.SAFE_FILE_STORAGE)
-safe_storage = safe_storage_class()
 
 
 def firstof(*items):
@@ -61,6 +53,16 @@ class WorkLog(models.Model):
                     auto_now=True,
                     verbose_name=_(u'date modified'))
 
+    state = models.ForeignKey('State',
+                    verbose_name=_(u"state"))
+
+    eta = models.DecimalField(
+            blank=True,
+            decimal_places=4,
+            max_digits=8,
+            null=True,
+            verbose_name=_(u"eta (hours)"))
+
     objects = WorkLogManager()
 
     class Meta:
@@ -74,6 +76,17 @@ class WorkLog(models.Model):
 
     def get_absolute_url(self):
         return reverse('worklog', args=[self.pk])
+
+    def bugtracker_url(self):
+        return self.bugtracker.url_pattern.format(id=self.bugtracker_object_id)
+
+    def save(self, *args, **kwargs):
+        new = True if not self.id else False
+        ret = super(WorkLog, self).save(*args, **kwargs)
+        if new:
+            WorkLog.objects.stop_active()
+            self.start()
+        return ret
 
     def start(self, description=None):
         # stop active WorkLog
@@ -94,9 +107,47 @@ class WorkLog(models.Model):
         else:
             active_entry.stop()
 
-        self.duration = sum(map(lambda e: e.duration, self.worklog_entries.all()))
+        self.duration = self._calculate_duration()
         self.active = False
         self.save()
+
+    def _calculate_duration(self):
+        return sum(map(lambda e: e.duration, self.worklog_entries.all()))
+
+    def update_duration(self):
+        self.duration = self._calculate_duration()
+        self.save()
+
+    def time_left(self):
+        if self.eta and self.duration:
+            return self._seconds_to_readable(int(self.eta * 3600) - self.duration)
+    time_left.short_description = _(u"time left")
+
+    def _seconds_to_readable(self, seconds):
+        if seconds < 0:
+            seconds = -seconds
+            negative = True
+        else:
+            negative = False
+        h = seconds / 3600
+        m = seconds / 60 % 60
+        s = seconds % 60
+        #return "{h}:{m}:{s}".format(**locals())
+        ret = "{h}h {m}m {s}s".format(**locals())
+        if negative:
+            ret = '- ' + ret
+        return ret
+
+    def get_duration_display(self):
+        if self.active or not self.duration:
+            self.update_duration()
+        return self._seconds_to_readable(self.duration)
+    get_duration_display.short_description = _(u"duration")
+
+    def get_eta_display(self):
+        if self.eta:
+            return self._seconds_to_readable(int(self.eta * 3600))
+    get_eta_display.short_description = _(u"eta")
 
 
 class WorkLogEntry(models.Model):
@@ -155,6 +206,11 @@ class Project(models.Model):
                     max_length=64,
                     verbose_name=_(u'name'))
 
+    url = models.URLField(
+            blank=True,
+            null=True,
+            verbose_name=_(u"url"))
+
     class Meta:
         verbose_name = _(u'project')
         verbose_name_plural = _(u'projects')
@@ -180,6 +236,24 @@ class BugTracker(models.Model):
     class Meta:
         verbose_name = _(u'bugtracker')
         verbose_name_plural = _(u'bugtrackers')
+
+    def __unicode__(self):
+        return self.name
+
+
+class State(models.Model):
+    name = models.CharField(
+                    max_length=64,
+                    verbose_name=_(u'name'))
+
+    color = models.CharField(
+                    max_length=6,
+                    verbose_name=_(u'color'),
+                    help_text=_(u"in hex, i.e. #000000 for white"))
+
+    class Meta:
+        verbose_name = _(u'state')
+        verbose_name_plural = _(u'states')
 
     def __unicode__(self):
         return self.name

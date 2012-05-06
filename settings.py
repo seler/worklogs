@@ -58,15 +58,15 @@ MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 
 MEDIA_URL = '/media/'
 
-# STATIC_ROOT = os.path.join(PROJECT_PATH, 'media/static')
+# STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 STATIC_ROOT = ''
 
-STATIC_URL = '/media/static/'
+STATIC_URL = '/static/'
 
-ADMIN_MEDIA_PREFIX = '/media/static/admin/'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_PATH, 'media/static'),
+    os.path.join(PROJECT_PATH, 'static'),
 )
 
 STATICFILES_FINDERS = (
@@ -114,15 +114,10 @@ INSTALLED_APPS = [
 
     'tinymce',
 
-    'murator_common.srv',
-    'murator_common.util',
-
-    # local
     'worklogs',
     'flatpages_extension',
 
     'south',
-    'perf_utils', # musi byc ostatnie
 ]
 
 SOUTH_TESTS_MIGRATE = False
@@ -160,27 +155,6 @@ TINYMCE_DEFAULT_CONFIG = {
         'content_css': MEDIA_URL + "css/tiny_mce_content.css",
         'entity_encoding': 'raw',
         }
-
-TINYMCE_LEAD_CFG = {
-        'theme': 'advanced',
-        'plugins': 'advlink,paste',
-        'theme_advanced_buttons1': "cut,copy,paste,pastetext,pasteword,|,bold,"
-                                   "italic,underline,strikethrough,charmap,"
-                                   "sub, sup,|,justifyleft,justifycenter,"
-                                   "justifyright,justifyfull,|,link,unlink,|,"
-                                   "forecolor,backcolor,|,code",
-        'theme_advanced_buttons2': "",
-        'theme_advanced_buttons3': "",
-        'theme_advanced_toolbar_location': "top",
-        'theme_advanced_toolbar_align': "left",
-        'theme_advanced_toolbar_align': "left",
-        'theme_advanced_statusbar_location': "bottom",
-        'theme_advanced_resizing': 'true',
-        'language': 'pl',
-        'content_css': MEDIA_URL + "css/tiny_mce_content.css",
-        'entity_encoding': 'raw',
-        }
-
 
 LOGGING = {
     'version': 1,
