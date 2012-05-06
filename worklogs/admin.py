@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
-from .models import WorkLog, WorkLogEntry, Project, BugTracker, State
+from .models import WorkLog, WorkLogEntry, Project, BugTracker
 from .urls import worklog_admin_urls
 
 
@@ -78,4 +78,4 @@ class WorkLogAdmin(admin.ModelAdmin):
 
 
 admin.site.register(WorkLog, WorkLogAdmin)
-admin.site.register((WorkLogEntry, Project, BugTracker, State))
+admin.site.register((WorkLogEntry, Project, BugTracker))

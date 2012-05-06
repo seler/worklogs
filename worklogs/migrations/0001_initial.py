@@ -11,7 +11,7 @@ class Migration(SchemaMigration):
         # Adding model 'WorkLog'
         db.create_table('worklogs_worklog', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('active', self.gf('django.db.models.fields.BooleanField')(default=False, unique=True)),
+            ('active', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=1024)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='worklogs', to=orm['auth.User'])),
             ('project', self.gf('django.db.models.fields.related.ForeignKey')(related_name='worklogs', to=orm['worklogs.Project'])),
@@ -20,33 +20,35 @@ class Migration(SchemaMigration):
             ('duration', self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True)),
             ('add_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('mod_date', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('state', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
+            ('eta', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=8, decimal_places=4, blank=True)),
         ))
         db.send_create_signal('worklogs', ['WorkLog'])
 
         # Adding model 'WorkLogEntry'
         db.create_table('worklogs_worklogentry', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('active', self.gf('django.db.models.fields.BooleanField')(default=False, unique=True)),
-            ('description', self.gf('django.db.models.fields.CharField')(max_length=1024)),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='work_logs', to=orm['auth.User'])),
+            ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=1024, null=True, blank=True)),
             ('worklog', self.gf('django.db.models.fields.related.ForeignKey')(related_name='worklog_entries', to=orm['worklogs.WorkLog'])),
-            ('start', self.gf('django.db.models.fields.DateTimeField')()),
-            ('end', self.gf('django.db.models.fields.DateTimeField')()),
+            ('start', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('end', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
         ))
         db.send_create_signal('worklogs', ['WorkLogEntry'])
 
         # Adding model 'Project'
         db.create_table('worklogs_project', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('active', self.gf('django.db.models.fields.BooleanField')(default=False, unique=True)),
+            ('active', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True)),
         ))
         db.send_create_signal('worklogs', ['Project'])
 
         # Adding model 'BugTracker'
         db.create_table('worklogs_bugtracker', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('active', self.gf('django.db.models.fields.BooleanField')(default=False, unique=True)),
+            ('active', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=64)),
             ('url_pattern', self.gf('django.db.models.fields.CharField')(max_length=256)),
         ))
@@ -104,38 +106,40 @@ class Migration(SchemaMigration):
         },
         'worklogs.bugtracker': {
             'Meta': {'object_name': 'BugTracker'},
-            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'unique': 'True'}),
+            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
             'url_pattern': ('django.db.models.fields.CharField', [], {'max_length': '256'})
         },
         'worklogs.project': {
             'Meta': {'object_name': 'Project'},
-            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'unique': 'True'}),
+            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            'url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         },
         'worklogs.worklog': {
             'Meta': {'ordering': "('-add_date',)", 'object_name': 'WorkLog'},
-            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'unique': 'True'}),
+            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'add_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'bugtracker': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'worklogs'", 'to': "orm['worklogs.BugTracker']"}),
             'bugtracker_object_id': ('django.db.models.fields.CharField', [], {'max_length': '16'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '1024'}),
             'duration': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'eta': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '8', 'decimal_places': '4', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'mod_date': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'project': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'worklogs'", 'to': "orm['worklogs.Project']"}),
+            'state': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'worklogs'", 'to': "orm['auth.User']"})
         },
         'worklogs.worklogentry': {
             'Meta': {'ordering': "('-start',)", 'object_name': 'WorkLogEntry'},
-            'active': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'unique': 'True'}),
-            'description': ('django.db.models.fields.CharField', [], {'max_length': '1024'}),
-            'end': ('django.db.models.fields.DateTimeField', [], {}),
+            'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '1024', 'null': 'True', 'blank': 'True'}),
+            'end': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'start': ('django.db.models.fields.DateTimeField', [], {}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'work_logs'", 'to': "orm['auth.User']"}),
+            'start': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'worklog': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'worklog_entries'", 'to': "orm['worklogs.WorkLog']"})
         }
     }

@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 
-from .managers import WorkLogManager, WorkLogEntryManager
+from .managers import WorkLogManager
 
 
 def firstof(*items):
@@ -18,6 +18,22 @@ def firstof(*items):
 
 
 class WorkLog(models.Model):
+    STATE_NEW = 0
+    STATE_IN_PROGRESS = 1
+    STATE_WAITING = 2
+    STATE_RESOLVED = 3
+    STATE_CLOSED = 4
+    STATE_REJECTED = 5
+
+    STATE_CHOICES = (\
+        (STATE_NEW, _(u"new")),
+        (STATE_IN_PROGRESS, _(u"in progress")),
+        (STATE_WAITING, _(u"waiting")),
+        (STATE_RESOLVED, _(u"resolved")),
+        (STATE_CLOSED, _(u"closed")),
+        (STATE_REJECTED, _(u"rejected")),
+    )
+
     active = models.BooleanField(verbose_name=_(u'active'))
 
     description = models.CharField(
@@ -53,8 +69,10 @@ class WorkLog(models.Model):
                     auto_now=True,
                     verbose_name=_(u'date modified'))
 
-    state = models.ForeignKey('State',
-                    verbose_name=_(u"state"))
+    state = models.PositiveSmallIntegerField(
+                default=STATE_NEW,
+                choices=STATE_CHOICES,
+                verbose_name=_(u"state"))
 
     eta = models.DecimalField(
             blank=True,
@@ -174,8 +192,6 @@ class WorkLogEntry(models.Model):
                     null=True,
                     verbose_name=_(u'end time'))
 
-    objects = WorkLogEntryManager()
-
     class Meta:
         verbose_name = _(u'work log entry')
         verbose_name_plural = _(u'work log entries')
@@ -241,22 +257,3 @@ class BugTracker(models.Model):
 
     def __unicode__(self):
         return self.name
-
-
-class State(models.Model):
-    name = models.CharField(
-                    max_length=64,
-                    verbose_name=_(u'name'))
-
-    color = models.CharField(
-                    max_length=6,
-                    verbose_name=_(u'color'),
-                    help_text=_(u"in hex, i.e. #000000 for white"))
-
-    class Meta:
-        verbose_name = _(u'state')
-        verbose_name_plural = _(u'states')
-
-    def __unicode__(self):
-        return self.name
-
