@@ -41,14 +41,15 @@
     <input type="text" id="to" name="to" value="{{ to.isoformat }}"/>
     <input type="submit" />
 </form>
+{% if time_per_worklog %}
 <div id="tabs">
     <ul>
-        <li><a href="#tabs-1">time per worklog</a></li>
-        <li><a href="#tabs-2">worklogs per day</a></li>
-        <li><a href="#tabs-3">time per project</a></li>
+        <li><a href="#tabs-1">{% trans "time per worklog" %}</a></li>
+        <li><a href="#tabs-2">{% trans "worklogs per day" %}</a></li>
+        <li><a href="#tabs-3">{% trans "time per project" %}</a></li>
     </ul>
     <div id="tabs-1">
-    <pre>{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+    <pre>{{ from }} - {{ to }}
 {% for worklog, duration in time_per_worklog %}
 {{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.state }}
 {{ worklog.bugtracker_url }}
@@ -56,7 +57,7 @@
 </pre>
     </div>
     <div id="tabs-2">
-    <pre>{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+    <pre>{{ from }} - {{ to }}
 {% for date, worklogs in worklogs_per_day.items %}
 {{ date }}:
     {% for worklog, duration in worklogs %}
@@ -71,7 +72,7 @@
 {{ project }}: {{ data.time|seconds_to_hours:2|floatformat }}h
 {% endfor %}</pre>
     </div>
-</div>
+</div>{% else %}{% trans "No worklogs in selected date range" %}{% endif %}
 </div>
 
 {% endblock %}

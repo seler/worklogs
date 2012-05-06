@@ -3,8 +3,7 @@ import datetime
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
-from django.views.generic.dates import TodayArchiveView
-from django.views.generic import ListView
+from django.utils.translation import ugettext as _
 
 from .models import WorkLog, WorkLogEntry
 
@@ -22,14 +21,14 @@ def tofirstdayinisoweek(year, week):
 def worklog_start(request, object_id):
     worklog = WorkLog.objects.get(id=object_id)
     worklog.start()
-    messages.success(request, 'WorkLog %s has been started.' % worklog)
+    messages.success(request, _(u'WorkLog "{}" has been started.').format(worklog))
     return HttpResponseRedirect('/worklogs/worklog/')
 
 
 def worklog_stop(request, object_id):
     worklog = WorkLog.objects.get(id=object_id)
     worklog.stop()
-    messages.success(request, 'WorkLog %s has been stopped.' % worklog)
+    messages.success(request, _(u'WorkLog "{}" has been stopped.').format(worklog))
     return HttpResponseRedirect('/worklogs/worklog/')
 
 
@@ -100,12 +99,3 @@ def report(request):
         'time_per_worklog': time_per_worklog,
     }
     return render_to_response('worklogs/report.html', context_vars)
-
-
-class WorkLogTodayArchiveView(TodayArchiveView):
-    model = WorkLog
-    date_field = 'mod_date'
-
-
-class WorkLogRecentView(ListView):
-    queryset = WorkLog.objects.recent(days=3)
