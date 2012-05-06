@@ -2,12 +2,10 @@
 
 from django.conf.urls.defaults import patterns, url
 
-from .views import WorkLogTodayArchiveView, WorkLogRecentView, worklog_start, worklog_stop, weekly_report
+from .views import worklog_start, worklog_stop, report
 
 urlpatterns = patterns('',
-    url(r'^today/$', WorkLogTodayArchiveView.as_view()),
-    url(r'^recent/$', WorkLogRecentView.as_view()),
-    url(r'^weekly/$', weekly_report),
+    url(r'^$', report),
 )
 
 worklog_admin_urls = patterns('',

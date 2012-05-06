@@ -33,13 +33,26 @@ def worklog_stop(request, object_id):
     return HttpResponseRedirect('/worklogs/worklog/')
 
 
-def weekly_report(request, year=current_year(), week=current_week()):
-    from_date = tofirstdayinisoweek(year, week)
-    to_date = from_date + datetime.timedelta(days=5)
-    return report(request, from_date, to_date, extra_context={'week': week})
+def report(request):
 
+    get_from_date = request.GET.get('from')
+    get_to_date = request.GET.get('to')
 
-def report(request, from_date, to_date, extra_context=None):
+    year = current_year()
+    week = current_week()
+
+    if get_from_date:
+        tmp = map(int, get_from_date.split('-'))
+        from_date = datetime.datetime(*tmp)
+    else:
+        from_date = tofirstdayinisoweek(year, week)
+
+    if get_to_date:
+        tmp = map(int, get_to_date.split('-'))
+        to_date = datetime.datetime(*tmp)
+    else:
+        to_date = from_date + datetime.timedelta(days=5)
+
     entries = WorkLogEntry.objects.in_range(from_date, to_date)
 
     time_per_project = {}
@@ -86,9 +99,6 @@ def report(request, from_date, to_date, extra_context=None):
         'time_per_project': time_per_project,
         'time_per_worklog': time_per_worklog,
     }
-    if extra_context:
-        extra_context.update(context_vars)
-        context_vars = extra_context
     return render_to_response('worklogs/report.html', context_vars)
 
 

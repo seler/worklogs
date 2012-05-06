@@ -1,7 +1,62 @@
-{% load worklogs_tags i18n %}
-<h3>worklogs per day</h3>
-<pre>
-{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+{% extends "base.html" %}
+{% load worklogs_tags i18n static %}
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static "themes/base/jquery.ui.all.css" %}">
+    <link rel="stylesheet" href="{% static "styles/demos.css" %}">
+    <script src="{% static "scripts/jquery-1.7.2.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.core.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.widget.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.datepicker.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.tabs.js" %}"></script>
+    <script>
+        $(function() {
+            $( "#tabs" ).tabs();
+            var dates = $( "#from, #to" ).datepicker({
+                changeMonth: true,
+                changeYear: true,
+                maxDate: "+0D",
+                firstDay: 1,
+                dateFormat: 'yy-mm-dd',
+                onSelect: function( selectedDate ) {
+                    var option = this.id == "from" ? "minDate" : "maxDate",
+                    instance = $( this ).data( "datepicker" ),
+                    date = $.datepicker.parseDate(
+                            instance.settings.dateFormat ||
+                            $.datepicker._defaults.dateFormat,
+                            selectedDate, instance.settings );
+                    dates.not( this ).datepicker( "option", option, date );
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="demo">
+<form method="GET">
+    <label for="from">From</label>
+    <input type="text" id="from" name="from" value="{{ from.isoformat }}"/>
+    <label for="to">to</label>
+    <input type="text" id="to" name="to" value="{{ to.isoformat }}"/>
+    <input type="submit" />
+</form>
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-1">time per worklog</a></li>
+        <li><a href="#tabs-2">worklogs per day</a></li>
+        <li><a href="#tabs-3">time per project</a></li>
+    </ul>
+    <div id="tabs-1">
+    <pre>{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+{% for worklog, duration in time_per_worklog %}
+{{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.state }}
+{{ worklog.bugtracker_url }}
+{% endfor %}
+</pre>
+    </div>
+    <div id="tabs-2">
+    <pre>{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
 {% for date, worklogs in worklogs_per_day.items %}
 {{ date }}:
     {% for worklog, duration in worklogs %}
@@ -9,19 +64,14 @@
     {{ worklog.bugtracker_url }}
     {% endfor %}
 {% endfor %}</pre>
-
-<h3>time per project</h3>
-<pre>
-{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
+    </div>
+    <div id="tabs-3">
+    <pre>{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
 {% for project, data in time_per_project.items %}
 {{ project }}: {{ data.time|seconds_to_hours:2|floatformat }}h
 {% endfor %}</pre>
+    </div>
+</div>
+</div>
 
-<h3>time per worklog</h3>
-<pre>
-{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
-{% for worklog, duration in time_per_worklog %}
-{{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.state }}
-{{ worklog.bugtracker_url }}
-{% endfor %}
-</pre>
+{% endblock %}
