@@ -104,14 +104,6 @@ class WorkLog(models.Model):
     def bugtracker_url(self):
         return self.bugtracker.url_pattern.format(id=self.bugtracker_object_id)
 
-    def save(self, *args, **kwargs):
-        new = True if not self.id else False
-        ret = super(WorkLog, self).save(*args, **kwargs)
-        if new:
-            WorkLog.objects.stop_active()
-            self.start()
-        return ret
-
     def start(self, description=None):
         # stop active WorkLog
         WorkLog.objects.stop_active()

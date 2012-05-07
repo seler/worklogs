@@ -9,6 +9,10 @@ sys.path.append(PROJECT_PATH)
 DEBUG = False
 TEMPLATE_DEBUG = False
 
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 365
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+#SESSION_COOKIE_PATH = '/worklog_cookie/'
+
 ADMINS = (
 )
 
