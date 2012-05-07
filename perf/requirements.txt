@@ -1,21 +1,2 @@
-Django==1.3
-celery
-django-celery
-django-debug-toolbar
-django-extensions
-django-piston==0.2.2
-django-ratings
-django-registration==0.7
-django-simple-captcha==3.0
-django-tinymce
-django-treenav
-django-mptt
-feincms #tylko interfejs admina do mptt
-#PIL
-simplejson
-south
-spambayes
-
-#cms_project
-#murator_common
-#perf_utils
+Django==1.4
+South==0.7.4
