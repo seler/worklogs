@@ -21,14 +21,16 @@ class WorkLog(models.Model):
     STATE_NEW = 0
     STATE_IN_PROGRESS = 1
     STATE_WAITING = 2
-    STATE_RESOLVED = 3
-    STATE_CLOSED = 4
-    STATE_REJECTED = 5
+    STATE_READY = 3
+    STATE_RESOLVED = 4
+    STATE_CLOSED = 5
+    STATE_REJECTED = 6
 
     STATE_CHOICES = (\
         (STATE_NEW, _(u"new")),
         (STATE_IN_PROGRESS, _(u"in progress")),
         (STATE_WAITING, _(u"waiting")),
+        (STATE_READY, _(u"ready")),
         (STATE_RESOLVED, _(u"resolved")),
         (STATE_CLOSED, _(u"closed")),
         (STATE_REJECTED, _(u"rejected")),
@@ -49,12 +51,16 @@ class WorkLog(models.Model):
                     related_name='worklogs')
 
     bugtracker = models.ForeignKey('BugTracker',
-                    verbose_name=_(u'bugtracker'),
-                    related_name='worklogs')
+            blank=True,
+            null=True,
+            verbose_name=_(u'bugtracker'),
+            related_name='worklogs')
 
     bugtracker_object_id = models.CharField(
-                    max_length=16,
-                    verbose_name=_(u"bugtracker object id"))
+            blank=True,
+            null=True,
+            max_length=16,
+            verbose_name=_(u"bugtracker object id"))
 
     duration = models.PositiveIntegerField(
                     blank=True,

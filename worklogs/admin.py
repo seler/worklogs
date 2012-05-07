@@ -2,13 +2,17 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
+
 from .models import WorkLog, WorkLogEntry, Project, BugTracker
 from .urls import worklog_admin_urls
+from .forms import WorkLogAddForm
 
 
 class WorkLogAdmin(admin.ModelAdmin):
+    add_form = WorkLogAddForm
     date_hierarchy = 'mod_date'
     list_display = (
+        'get_bugtracker_id',
         'description',
         'project_link',
         'bugtracker_link',
@@ -23,7 +27,11 @@ class WorkLogAdmin(admin.ModelAdmin):
     list_editable = ('state',)
     list_filter = ('project', 'state', 'bugtracker')
     list_select_related = True
-    search_fields = ('description', 'worklog_entries__description')
+    search_fields = ('description', 'worklog_entries__description', 'bugtracker_object_id')
+
+    def get_bugtracker_id(self, worklog):
+        return '#%s' % worklog.bugtracker_object_id
+    get_bugtracker_id.short_description = _(u"#")
 
     def get_duration_display(self, worklog):
         kwargs = {
@@ -57,11 +65,20 @@ class WorkLogAdmin(admin.ModelAdmin):
         url = worklog.project.url
         name = worklog.project.name
         if url:
-            return """<a href="{url}">{name}</a>""".format(url=url, name=name)
+            return u"""<a href="{url}">{name}</a>""".format(url=url, name=name)
         else:
             return name
     project_link.allow_tags = True
     project_link.short_description = _("project")
+
+    def get_form(self, request, obj=None, **kwargs):
+        defaults = {}
+        if obj is None:
+            defaults.update({
+                'form': self.add_form,
+            })
+        defaults.update(kwargs)
+        return super(WorkLogAdmin, self).get_form(request, obj, **defaults)
 
     def get_urls(self):
         urls = super(WorkLogAdmin, self).get_urls()

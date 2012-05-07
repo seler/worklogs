@@ -51,7 +51,7 @@
     <div id="tabs-1">
     <pre>{{ from }} - {{ to }}
 {% for worklog, duration in time_per_worklog %}
-{{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.state }}
+{{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.get_state_display }}
 {{ worklog.bugtracker_url }}
 {% endfor %}
 </pre>
