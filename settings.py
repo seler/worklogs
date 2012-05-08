@@ -33,8 +33,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
         )
 
 API_IPS = (
-    '127.0.0.1', # ip Boga
-    '80.52.177.82', # Bialystok
+    '127.0.0.1',
 )
 
 DATABASES = {
