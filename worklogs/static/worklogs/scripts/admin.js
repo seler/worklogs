@@ -1,7 +1,7 @@
 start_load_time = new Date();
 
 jQuery(document).ready(function (){
-    container = jQuery('.worklog_duration');
+    container = jQuery('.duration');
     if (container.text()){
         seconds = get_seconds(container);
         end_load_time = new Date();

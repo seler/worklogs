@@ -22,25 +22,27 @@ def tofirstdayinisoweek(year, week):
 @login_required
 def task_start(request, object_id):
     task = Task.objects.get(id=object_id)
+    next = request.GET.get('next', '/')
     if request.user == task.user or request.user.is_superuser:
         # FIXME: zamienic na "user_passes_test"
         task.start()
         messages.success(request, _(u'Task "{}" has been started.').format(task))
     else:
         messages.error(request, _(u'Task "{}" has <b>not</b> been started. Insufficient permissions.').format(task))
-    return HttpResponseRedirect('/worklogs/task/')
+    return HttpResponseRedirect(next)
 
 
 @login_required
 def task_stop(request, object_id):
     task = Task.objects.get(id=object_id)
+    next = request.GET.get('next', '/')
     if request.user == task.user or request.user.is_superuser:
         # FIXME: zamienic na "user_passes_test"
         task.stop()
         messages.success(request, _(u'Task "{}" has been stopped.').format(task))
     else:
         messages.error(request, _(u'Task "{}" has <b>not</b> been stopped. Insufficient permissions.').format(task))
-    return HttpResponseRedirect('/worklogs/task/')
+    return HttpResponseRedirect(next)
 
 
 @login_required

@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 
 from .managers import TaskManager, WorkLogManager
+from .templatetags.worklogs_tags import seconds_to_readable
 
 
 def firstof(*items):
@@ -96,7 +97,11 @@ class Task(models.Model):
         get_latest_by = 'add_date'
 
     def __unicode__(self):
-        return self.description
+        return "{}/{}".format(self.bugtracker.name, self.bugtracker_object_id)
+
+    def get_bugtracker_id(self):
+        return '#%s' % self.bugtracker_object_id
+    get_bugtracker_id.short_description = _(u"#")
 
     def get_absolute_url(self):
         return reverse('task', args=[self.pk])
@@ -117,7 +122,7 @@ class Task(models.Model):
 
     def stop(self):
         try:
-            active_entry = self.task_entries.filter(active=True).get()
+            active_entry = self.worklogs.filter(active=True).get()
         except WorkLog.DoesNotExist:
             pass
         else:
@@ -128,7 +133,7 @@ class Task(models.Model):
         self.save()
 
     def _calculate_duration(self):
-        return sum(map(lambda e: e.duration, self.task_entries.all()))
+        return sum(map(lambda e: e.duration, self.worklogs.all()))
 
     def update_duration(self):
         self.duration = self._calculate_duration()
@@ -221,6 +226,10 @@ class WorkLog(models.Model):
     @duration.setter
     def duration(self, seconds):
         self.end = self.start + datetime.timedelta(seconds=seconds)
+
+    def get_duration_display(self):
+        return seconds_to_readable(self.duration)
+    get_duration_display.short_description = _(u"duration")
 
 
 class Project(models.Model):
