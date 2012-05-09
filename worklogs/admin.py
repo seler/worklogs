@@ -3,13 +3,13 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 
-from .models import WorkLog, WorkLogEntry, Project, BugTracker
-from .urls import worklog_admin_urls
-from .forms import WorkLogAddForm
+from .models import Task, WorkLog, Project, BugTracker
+from .urls import task_admin_urls
+from .forms import TaskAddForm
 
 
-class WorkLogAdmin(admin.ModelAdmin):
-    add_form = WorkLogAddForm
+class TaskAdmin(admin.ModelAdmin):
+    add_form = TaskAddForm
     date_hierarchy = 'mod_date'
     list_display = (
         'get_bugtracker_id',
@@ -29,17 +29,17 @@ class WorkLogAdmin(admin.ModelAdmin):
     list_select_related = True
     search_fields = ('description', 'worklog_entries__description', 'bugtracker_object_id')
 
-    def get_bugtracker_id(self, worklog):
-        return '#%s' % worklog.bugtracker_object_id
+    def get_bugtracker_id(self, task):
+        return '#%s' % task.bugtracker_object_id
     get_bugtracker_id.short_description = _(u"#")
 
-    def get_duration_display(self, worklog):
+    def get_duration_display(self, task):
         kwargs = {
-            'duration_formatted': worklog.get_duration_display(),
-            'duration': worklog.duration,
+            'duration_formatted': task.get_duration_display(),
+            'duration': task.duration,
         }
-        if worklog.active:
-            return """<span class="worklog_duration d{duration}s">
+        if task.active:
+            return """<span class="task_duration d{duration}s">
     {duration_formatted}
 </span>""".format(**kwargs)
         else:
@@ -47,23 +47,23 @@ class WorkLogAdmin(admin.ModelAdmin):
     get_duration_display.allow_tags = True
     get_duration_display.short_description = _(u"duration")
 
-    def toggle_active_button(self, worklog):
-        if worklog.active:
+    def toggle_active_button(self, task):
+        if task.active:
             link = """<a href="stop/{id}/" title="click to stop">{icon} stop</a>"""
         else:
             link = """<a href="start/{id}/" title="click to start">{icon} start</a>"""
-        return link.format(id=worklog.id, icon=_boolean_icon(worklog.active))
+        return link.format(id=task.id, icon=_boolean_icon(task.active))
     toggle_active_button.allow_tags = True
     toggle_active_button.short_description = _(u"toggle")
 
-    def bugtracker_link(self, worklog):
-        return """<a href="%s">%s/%s<a>""" % (worklog.bugtracker_url(), worklog.bugtracker.name, worklog.bugtracker_object_id)
+    def bugtracker_link(self, task):
+        return """<a href="%s">%s/%s<a>""" % (task.bugtracker_url(), task.bugtracker.name, task.bugtracker_object_id)
     bugtracker_link.allow_tags = True
     bugtracker_link.short_description = _("bugtracker")
 
-    def project_link(self, worklog):
-        url = worklog.project.url
-        name = worklog.project.name
+    def project_link(self, task):
+        url = task.project.url
+        name = task.project.name
         if url:
             return u"""<a href="{url}">{name}</a>""".format(url=url, name=name)
         else:
@@ -78,11 +78,11 @@ class WorkLogAdmin(admin.ModelAdmin):
                 'form': self.add_form,
             })
         defaults.update(kwargs)
-        return super(WorkLogAdmin, self).get_form(request, obj, **defaults)
+        return super(TaskAdmin, self).get_form(request, obj, **defaults)
 
     def get_urls(self):
-        urls = super(WorkLogAdmin, self).get_urls()
-        return worklog_admin_urls + urls
+        urls = super(TaskAdmin, self).get_urls()
+        return task_admin_urls + urls
 
     class Media:
         css = {
@@ -94,5 +94,5 @@ class WorkLogAdmin(admin.ModelAdmin):
         )
 
 
-admin.site.register(WorkLog, WorkLogAdmin)
-admin.site.register((WorkLogEntry, Project, BugTracker))
+admin.site.register(Task, TaskAdmin)
+admin.site.register((WorkLog, Project, BugTracker))

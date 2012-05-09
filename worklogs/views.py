@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 
-from .models import WorkLog, WorkLogEntry
+from .models import Task, WorkLog
 
 current_year = lambda: datetime.datetime.now().isocalendar()[0]
 current_week = lambda: datetime.datetime.now().isocalendar()[1]
@@ -20,27 +20,27 @@ def tofirstdayinisoweek(year, week):
 
 
 @login_required
-def worklog_start(request, object_id):
-    worklog = WorkLog.objects.get(id=object_id)
-    if request.user == worklog.user or request.user.is_superuser:
+def task_start(request, object_id):
+    task = Task.objects.get(id=object_id)
+    if request.user == task.user or request.user.is_superuser:
         # FIXME: zamienic na "user_passes_test"
-        worklog.start()
-        messages.success(request, _(u'WorkLog "{}" has been started.').format(worklog))
+        task.start()
+        messages.success(request, _(u'Task "{}" has been started.').format(task))
     else:
-        messages.error(request, _(u'WorkLog "{}" has <b>not</b> been started. Insufficient permissions.').format(worklog))
-    return HttpResponseRedirect('/worklogs/worklog/')
+        messages.error(request, _(u'Task "{}" has <b>not</b> been started. Insufficient permissions.').format(task))
+    return HttpResponseRedirect('/worklogs/task/')
 
 
 @login_required
-def worklog_stop(request, object_id):
-    worklog = WorkLog.objects.get(id=object_id)
-    if request.user == worklog.user or request.user.is_superuser:
+def task_stop(request, object_id):
+    task = Task.objects.get(id=object_id)
+    if request.user == task.user or request.user.is_superuser:
         # FIXME: zamienic na "user_passes_test"
-        worklog.stop()
-        messages.success(request, _(u'WorkLog "{}" has been stopped.').format(worklog))
+        task.stop()
+        messages.success(request, _(u'Task "{}" has been stopped.').format(task))
     else:
-        messages.error(request, _(u'WorkLog "{}" has <b>not</b> been stopped. Insufficient permissions.').format(worklog))
-    return HttpResponseRedirect('/worklogs/worklog/')
+        messages.error(request, _(u'Task "{}" has <b>not</b> been stopped. Insufficient permissions.').format(task))
+    return HttpResponseRedirect('/worklogs/task/')
 
 
 @login_required
@@ -64,54 +64,54 @@ def report(request):
     else:
         to_date = from_date + datetime.timedelta(days=5)
 
-    entries = WorkLogEntry.objects.in_range(from_date, to_date).filter(worklog__user=request.user)
+    entries = WorkLog.objects.in_range(from_date, to_date).filter(task__user=request.user)
 
     time_per_project = {}
-    time_per_worklog = []
-    worklogs_per_day = {}
+    time_per_task = []
+    tasks_per_day = {}
 
     for entry in entries:
         try:
-            index = list(map(lambda a: a[0].id, time_per_worklog)).index(entry.worklog.id)
+            index = list(map(lambda a: a[0].id, time_per_task)).index(entry.task.id)
         except ValueError:
-            time_per_worklog.append([entry.worklog, entry.duration])
+            time_per_task.append([entry.task, entry.duration])
         else:
-            time_per_worklog[index][1] += entry.duration
+            time_per_task[index][1] += entry.duration
 
         date = entry.start.date()
-        if date in worklogs_per_day:
+        if date in tasks_per_day:
             try:
-                index = list(map(lambda a: a[0].id, worklogs_per_day[date]['worklogs'])).index(entry.worklog.id)
+                index = list(map(lambda a: a[0].id, tasks_per_day[date]['tasks'])).index(entry.task.id)
             except ValueError:
-                worklogs_per_day[date]['worklogs'].append([entry.worklog, entry.duration])
+                tasks_per_day[date]['tasks'].append([entry.task, entry.duration])
             else:
-                worklogs_per_day[date]['worklogs'][index][1] += entry.duration
-            worklogs_per_day[date]['time'] += entry.duration
+                tasks_per_day[date]['tasks'][index][1] += entry.duration
+            tasks_per_day[date]['time'] += entry.duration
         else:
-            worklogs_per_day[date] = {
+            tasks_per_day[date] = {
                     'time': entry.duration,
-                    'worklogs': [[entry.worklog, entry.duration]]
+                    'tasks': [[entry.task, entry.duration]]
                 }
 
-        if entry.worklog.project in time_per_project:
-            time_per_project[entry.worklog.project]['time'] += entry.duration
+        if entry.task.project in time_per_project:
+            time_per_project[entry.task.project]['time'] += entry.duration
             try:
-                index = list(map(lambda a: a[0].id, time_per_project[entry.worklog.project]['worklogs'])).index(entry.worklog.id)
+                index = list(map(lambda a: a[0].id, time_per_project[entry.task.project]['tasks'])).index(entry.task.id)
             except ValueError:
-                time_per_project[entry.worklog.project]['worklogs'].append([entry.worklog, entry.duration])
+                time_per_project[entry.task.project]['tasks'].append([entry.task, entry.duration])
             else:
-                time_per_project[entry.worklog.project]['worklogs'][index][1] += entry.duration
+                time_per_project[entry.task.project]['tasks'][index][1] += entry.duration
         else:
-            time_per_project[entry.worklog.project] = {
+            time_per_project[entry.task.project] = {
                     'time': entry.duration,
-                    'worklogs': [[entry.worklog, entry.duration]]
+                    'tasks': [[entry.task, entry.duration]]
                 }
 
     context_vars = {
         'from': from_date.date(),
         'to': to_date.date(),
-        'worklogs_per_day': worklogs_per_day,
+        'tasks_per_day': tasks_per_day,
         'time_per_project': time_per_project,
-        'time_per_worklog': time_per_worklog,
+        'time_per_task': time_per_task,
     }
     return render_to_response('worklogs/report.html', context_vars)

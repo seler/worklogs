@@ -5,11 +5,11 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from .models import WorkLog
+from .models import Task
 
 
-class WorkLogAddForm(forms.ModelForm):
+class TaskAddForm(forms.ModelForm):
 
     class Meta:
-        model = WorkLog
+        model = Task
         exclude = ('active', 'duration')

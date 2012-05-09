@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 
-from .managers import WorkLogManager, WorkLogEntryManager
+from .managers import TaskManager, WorkLogManager
 
 
 def firstof(*items):
@@ -17,7 +17,7 @@ def firstof(*items):
             return i
 
 
-class WorkLog(models.Model):
+class Task(models.Model):
     STATE_NEW = 0
     STATE_IN_PROGRESS = 1
     STATE_WAITING = 2
@@ -44,17 +44,17 @@ class WorkLog(models.Model):
 
     user = models.ForeignKey('auth.User',
                     verbose_name=_(u'user'),
-                    related_name='worklogs')
+                    related_name='tasks')
 
     project = models.ForeignKey('Project',
                     verbose_name=_(u'project'),
-                    related_name='worklogs')
+                    related_name='tasks')
 
     bugtracker = models.ForeignKey('BugTracker',
             blank=True,
             null=True,
             verbose_name=_(u'bugtracker'),
-            related_name='worklogs')
+            related_name='tasks')
 
     bugtracker_object_id = models.CharField(
             blank=True,
@@ -87,11 +87,11 @@ class WorkLog(models.Model):
             null=True,
             verbose_name=_(u"eta (hours)"))
 
-    objects = WorkLogManager()
+    objects = TaskManager()
 
     class Meta:
-        verbose_name = _(u'work log')
-        verbose_name_plural = _(u'work logs')
+        verbose_name = _(u'task')
+        verbose_name_plural = _(u'tasks')
         ordering = ('-add_date',)
         get_latest_by = 'add_date'
 
@@ -99,26 +99,26 @@ class WorkLog(models.Model):
         return self.description
 
     def get_absolute_url(self):
-        return reverse('worklog', args=[self.pk])
+        return reverse('task', args=[self.pk])
 
     def bugtracker_url(self):
         return self.bugtracker.url_pattern.format(id=self.bugtracker_object_id)
 
     def start(self, description=None):
-        # stop active WorkLog
-        WorkLog.objects.stop_active()
+        # stop active Task
+        Task.objects.stop_active()
 
         # mark self active
         self.active = True
         self.save()
 
-        # create new WorkLogEntry for this WorkLog
-        WorkLogEntry.objects.create(worklog=self, description=description)
+        # create new WorkLog for this Task
+        WorkLog.objects.create(task=self, description=description)
 
     def stop(self):
         try:
-            active_entry = self.worklog_entries.filter(active=True).get()
-        except WorkLogEntry.DoesNotExist:
+            active_entry = self.task_entries.filter(active=True).get()
+        except WorkLog.DoesNotExist:
             pass
         else:
             active_entry.stop()
@@ -128,7 +128,7 @@ class WorkLog(models.Model):
         self.save()
 
     def _calculate_duration(self):
-        return sum(map(lambda e: e.duration, self.worklog_entries.all()))
+        return sum(map(lambda e: e.duration, self.task_entries.all()))
 
     def update_duration(self):
         self.duration = self._calculate_duration()
@@ -166,7 +166,7 @@ class WorkLog(models.Model):
     get_eta_display.short_description = _(u"eta")
 
 
-class WorkLogEntry(models.Model):
+class WorkLog(models.Model):
     active = models.BooleanField(
             default=True,
             verbose_name=_(u'active'))
@@ -177,9 +177,9 @@ class WorkLogEntry(models.Model):
                     max_length=1024,
                     verbose_name=_(u'description'))
 
-    worklog = models.ForeignKey('WorkLog',
-                    verbose_name=_(u'worklog'),
-                    related_name='worklog_entries')
+    task = models.ForeignKey('Task',
+                    verbose_name=_(u'task'),
+                    related_name='worklogs')
 
     start = models.DateTimeField(
                     default=datetime.datetime.now,
@@ -197,11 +197,11 @@ class WorkLogEntry(models.Model):
 #            null=True,
 #            verbose_name=_(u"cleared"))
 
-    objects = WorkLogEntryManager()
+    objects = WorkLogManager()
 
     class Meta:
-        verbose_name = _(u'work log entry')
-        verbose_name_plural = _(u'work log entries')
+        verbose_name = _(u'worklog')
+        verbose_name_plural = _(u'worklogs')
         ordering = ('-start',)
         get_latest_by = 'start'
 

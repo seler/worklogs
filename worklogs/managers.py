@@ -5,7 +5,7 @@ import datetime
 from django.db import models
 
 
-class WorkLogManager(models.Manager):
+class TaskManager(models.Manager):
     def recent(self, days=0):
         today = datetime.date.today()
         start = today - datetime.timedelta(days=days)
@@ -14,16 +14,16 @@ class WorkLogManager(models.Manager):
         return self.get_query_set().filter(add_date__gte=start, mod_date__lt=end)
 
     def stop_active(self):
-        worklog_queryset = self.get_query_set().filter(active=True)
-        if worklog_queryset.exists():
-            worklog = worklog_queryset.get()
-            worklog.stop()
-            return worklog
+        task_queryset = self.get_query_set().filter(active=True)
+        if task_queryset.exists():
+            task = task_queryset.get()
+            task.stop()
+            return task
         else:
             return False
 
 
-class WorkLogEntryManager(models.Manager):
+class WorkLogManager(models.Manager):
     def in_range(self, from_date, to_date):
         start = datetime.datetime.combine(from_date, datetime.time())
         end = datetime.datetime.combine(to_date + datetime.timedelta(days=1), datetime.time())
