@@ -41,3 +41,9 @@ def seconds_to_time(seconds):
     if negative:
         ret = '- ' + ret
     return ret
+
+
+@register.filter
+def date_to_hours(date):
+    seconds = ((date.hour * 3600) + (date.minute * 60) + (date.second))
+    return '{}'.format(round(seconds / 3600., 4))

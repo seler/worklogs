@@ -71,6 +71,7 @@ def report(request):
     time_per_project = {}
     time_per_task = []
     tasks_per_day = {}
+    worklogs_plot = {}
 
     for entry in entries:
         try:
@@ -109,11 +110,25 @@ def report(request):
                     'tasks': [[entry.task, entry.duration]]
                 }
 
+        # worklogs_plot
+
+        ticket = "{}{}".format(entry.task.bugtracker.name, entry.task.bugtracker_object_id)
+        start = entry.start
+        end = entry.end if entry.end else datetime.datetime.now()
+        row = (start, end)
+        if ticket in worklogs_plot:
+            worklogs_plot[ticket].append(row)
+        else:
+            worklogs_plot[ticket] = [row]
+
     context_vars = {
         'from': from_date.date(),
         'to': to_date.date(),
         'tasks_per_day': tasks_per_day,
         'time_per_project': time_per_project,
         'time_per_task': time_per_task,
+        'worklogs_plot': worklogs_plot,
+        'worklogs_plot_start': from_date.date() - datetime.timedelta(days=1),
+        'worklogs_plot_end': to_date.date() + datetime.timedelta(days=1),
     }
     return render_to_response('worklogs/report.html', context_vars)
