@@ -90,7 +90,6 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
@@ -121,13 +120,6 @@ SKIP_SOUTH_TESTS = True
 
 ugettext = lambda s: s
 
-FLATPAGES_TEMPLATE_NAME_CHOICES = (
-    ('flatpages/default.html', ugettext('Default template')),
-    ('flatpages/advertiser.html', ugettext(u'strona reklamodawcy')),
-    ('flatpages/provider.html', ugettext(u'strona dostawcy')),
-    ('flatpages/publisher.html', ugettext(u'strona wydawcy')),
-    ('flatpages/contact.html', ugettext(u'kontakt')),
-)
 
 TINYMCE_DEFAULT_CONFIG = {
         'theme': 'advanced',

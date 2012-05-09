@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
@@ -18,20 +19,31 @@ def tofirstdayinisoweek(year, week):
     return ret
 
 
+@login_required
 def worklog_start(request, object_id):
     worklog = WorkLog.objects.get(id=object_id)
-    worklog.start()
-    messages.success(request, _(u'WorkLog "{}" has been started.').format(worklog))
+    if request.user == worklog.user or request.user.is_superuser:
+        # FIXME: zamienic na "user_passes_test"
+        worklog.start()
+        messages.success(request, _(u'WorkLog "{}" has been started.').format(worklog))
+    else:
+        messages.error(request, _(u'WorkLog "{}" has <b>not</b> been started. Insufficient permissions.').format(worklog))
     return HttpResponseRedirect('/worklogs/worklog/')
 
 
+@login_required
 def worklog_stop(request, object_id):
     worklog = WorkLog.objects.get(id=object_id)
-    worklog.stop()
-    messages.success(request, _(u'WorkLog "{}" has been stopped.').format(worklog))
+    if request.user == worklog.user or request.user.is_superuser:
+        # FIXME: zamienic na "user_passes_test"
+        worklog.stop()
+        messages.success(request, _(u'WorkLog "{}" has been stopped.').format(worklog))
+    else:
+        messages.error(request, _(u'WorkLog "{}" has <b>not</b> been stopped. Insufficient permissions.').format(worklog))
     return HttpResponseRedirect('/worklogs/worklog/')
 
 
+@login_required
 def report(request):
 
     get_from_date = request.GET.get('from')
@@ -52,7 +64,7 @@ def report(request):
     else:
         to_date = from_date + datetime.timedelta(days=5)
 
-    entries = WorkLogEntry.objects.in_range(from_date, to_date)
+    entries = WorkLogEntry.objects.in_range(from_date, to_date).filter(worklog__user=request.user)
 
     time_per_project = {}
     time_per_worklog = []
@@ -69,13 +81,17 @@ def report(request):
         date = entry.start.date()
         if date in worklogs_per_day:
             try:
-                index = list(map(lambda a: a[0].id, worklogs_per_day[date])).index(entry.worklog.id)
+                index = list(map(lambda a: a[0].id, worklogs_per_day[date]['worklogs'])).index(entry.worklog.id)
             except ValueError:
-                worklogs_per_day[date].append([entry.worklog, entry.duration])
+                worklogs_per_day[date]['worklogs'].append([entry.worklog, entry.duration])
             else:
-                worklogs_per_day[date][index][1] += entry.duration
+                worklogs_per_day[date]['worklogs'][index][1] += entry.duration
+            worklogs_per_day[date]['time'] += entry.duration
         else:
-            worklogs_per_day[date] = [[entry.worklog, entry.duration]]
+            worklogs_per_day[date] = {
+                    'time': entry.duration,
+                    'worklogs': [[entry.worklog, entry.duration]]
+                }
 
         if entry.worklog.project in time_per_project:
             time_per_project[entry.worklog.project]['time'] += entry.duration

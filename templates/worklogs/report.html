@@ -5,13 +5,21 @@
     <link rel="stylesheet" href="{% static "themes/base/jquery.ui.all.css" %}">
     <link rel="stylesheet" href="{% static "styles/demos.css" %}">
     <script src="{% static "scripts/jquery-1.7.2.js" %}"></script>
+    <script src="{% static "scripts/jquery.cookie.js" %}"></script>
     <script src="{% static "ui/jquery.ui.core.js" %}"></script>
     <script src="{% static "ui/jquery.ui.widget.js" %}"></script>
-    <script src="{% static "ui/jquery.ui.datepicker.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.mouse.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.sortable.js" %}"></script>
     <script src="{% static "ui/jquery.ui.tabs.js" %}"></script>
+    <script src="{% static "ui/jquery.ui.datepicker.js" %}"></script>
     <script>
         $(function() {
-            $( "#tabs" ).tabs();
+            var tabs = $( "#reports" ).tabs({
+                cookie: {expires: 1}
+            });
+            tabs.tabs().find( ".ui-tabs-nav" ).sortable({
+                axis: "x"
+	    });
             var dates = $( "#from, #to" ).datepicker({
                 changeMonth: true,
                 changeYear: true,
@@ -28,8 +36,19 @@
                     dates.not( this ).datepicker( "option", option, date );
                 }
             });
+            $("textarea.copy").each(function(){
+                var rows = this.value.split("\n").length;
+                this.setAttribute('rows', rows + 1);
+            });
         });
     </script>
+    <style>
+        textarea.copy {
+            font-family: monospace;
+            font-size: 12px;
+            border: none;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -42,35 +61,32 @@
     <input type="submit" />
 </form>
 {% if time_per_worklog %}
-<div id="tabs">
+<div id="reports">
     <ul>
-        <li><a href="#tabs-1">{% trans "time per worklog" %}</a></li>
-        <li><a href="#tabs-2">{% trans "worklogs per day" %}</a></li>
-        <li><a href="#tabs-3">{% trans "time per project" %}</a></li>
+        <li><a href="#time_per_worklog">{% trans "time per worklog" %}</a></li>
+        <li><a href="#worklogs_per_day">{% trans "worklogs per day" %}</a></li>
+        <li><a href="#time_per_project">{% trans "time per project" %}</a></li>
     </ul>
-    <div id="tabs-1">
-    <pre>{{ from }} - {{ to }}
-{% for worklog, duration in time_per_worklog %}
+    <div id="time_per_worklog">
+    <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+{% endif %}{% for worklog, duration in time_per_worklog %}
 {{ worklog.description }} ({{duration|seconds_to_time}}) - {{ worklog.get_state_display }}
 {{ worklog.bugtracker_url }}
-{% endfor %}
-</pre>
+{% endfor %}</textarea>
     </div>
-    <div id="tabs-2">
-    <pre>{{ from }} - {{ to }}
-{% for date, worklogs in worklogs_per_day.items %}
-{{ date }}:
-    {% for worklog, duration in worklogs %}
+    <div id="worklogs_per_day">
+    <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+{% endif %}{% for date, data in worklogs_per_day.items %}
+{{ date }} ({{ data.time|seconds_to_time }}):
+    {% for worklog, duration in data.worklogs %}
     {{ worklog.description }} ({{duration|seconds_to_time}})
     {{ worklog.bugtracker_url }}
-    {% endfor %}
-{% endfor %}</pre>
+    {% endfor %}{% endfor %}</textarea>
     </div>
-    <div id="tabs-3">
-    <pre>{{ from }} - {{ to }}{% if week %} ({% trans "week" %} {{ week }}){% endif %}
-{% for project, data in time_per_project.items %}
-{{ project }}: {{ data.time|seconds_to_hours:2|floatformat }}h
-{% endfor %}</pre>
+    <div id="time_per_project">
+    <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+{% endif %}{% for project, data in time_per_project.items %}
+{{ project }}: {{ data.time|seconds_to_hours:2|floatformat }}h{% endfor %}</textarea>
     </div>
 </div>{% else %}{% trans "No worklogs in selected date range" %}{% endif %}
 </div>
