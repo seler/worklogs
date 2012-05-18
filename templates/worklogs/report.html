@@ -115,6 +115,7 @@ ohlc2 = [
     <div id="reports">
         <ul>
             <li><a href="#time_per_task">{% trans "time per task" %}</a></li>
+            <li><a href="#tasks_status">{% trans "tasks status" %}</a></li>
             <li><a href="#tasks_per_day">{% trans "tasks per day" %}</a></li>
             <li><a href="#time_per_project">{% trans "time per project" %}</a></li>
             <li><a href="#tasks_per_day_plot">{% trans "plot" %}</a></li>
@@ -126,6 +127,13 @@ ohlc2 = [
 {{ task.bugtracker_url }}
 {% endfor %}</textarea>
     </div>
+        <div id="tasks_status">
+        <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+{% endif %}{% for task, duration in time_per_task %}
+{{ task.bugtracker_url }} - {{ task.get_state_display }}
+{% endfor %}</textarea>
+    </div>
+
     <div id="tasks_per_day">
         <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
 {% endif %}{% for date, data in tasks_per_day.items %}
