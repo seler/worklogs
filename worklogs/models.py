@@ -195,12 +195,12 @@ class WorkLog(models.Model):
                     null=True,
                     verbose_name=_(u'end time'))
 
-#    accounted = models.DecimalField(
-#            blank=True,
-#            decimal_places=4,
-#            max_digits=8,
-#            null=True,
-#            verbose_name=_(u"cleared"))
+    accounted = models.DecimalField(
+            blank=True,
+            decimal_places=4,
+            max_digits=8,
+            null=True,
+            verbose_name=_(u"accounted"))
 
     objects = WorkLogManager()
 
@@ -273,3 +273,28 @@ class BugTracker(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+class Note(models.Model):
+    task = models.ForeignKey('Task',
+            related_name='notes',
+            verbose_name=_(u"task"))
+
+    note = models.TextField(
+            verbose_name=_(u"note"))
+
+    add_date = models.DateTimeField(
+                    auto_now_add=True,
+                    verbose_name=_(u'date added'))
+
+    mod_date = models.DateTimeField(
+                    auto_now=True,
+                    verbose_name=_(u'date modified'))
+
+    class Meta:
+        verbose_name = _(u'note')
+        verbose_name_plural = _(u'notes')
+
+    def __unicode__(self):
+        return self.note[:min(60, len(self.note))] + u'...'
+

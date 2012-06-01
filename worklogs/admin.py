@@ -3,9 +3,22 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 
-from .models import Task, WorkLog, Project, BugTracker
+from .models import Task, WorkLog, Project, BugTracker, Note
 from .urls import task_admin_urls
 from .forms import TaskAddForm
+
+
+class WorkLogInlineAdmin(admin.TabularInline):
+    model = WorkLog
+    extra = 0
+    max_num = 0
+
+
+class NoteInlineAdmin(admin.StackedInline):
+    model = Note
+    extra = 0
+    fields = (('add_date', 'mod_date'), 'note')
+    readonly_fields = ('add_date', 'mod_date')
 
 
 class TaskAdmin(admin.ModelAdmin):
@@ -24,6 +37,7 @@ class TaskAdmin(admin.ModelAdmin):
         'state',
         'toggle_active_button',
     )
+    inlines = (WorkLogInlineAdmin, NoteInlineAdmin)
     list_editable = ('state',)
     list_filter = ('project', 'state', 'bugtracker')
     list_select_related = True
@@ -53,7 +67,8 @@ class TaskAdmin(admin.ModelAdmin):
     toggle_active_button.short_description = _(u"toggle")
 
     def get_bugtracker_link(self, task):
-        return """<a href="%s">%s/%s<a>""" % (task.bugtracker_url(), task.bugtracker.name, task.bugtracker_object_id)
+        if task.bugtracker:
+            return """<a href="%s">%s/%s<a>""" % (task.bugtracker_url(), task.bugtracker.name, task.bugtracker_object_id)
     get_bugtracker_link.allow_tags = True
     get_bugtracker_link.short_description = _("bugtracker")
 
@@ -80,6 +95,9 @@ class TaskAdmin(admin.ModelAdmin):
         urls = super(TaskAdmin, self).get_urls()
         return task_admin_urls + urls
 
+    def save_model(self, request, obj, form, change):
+        obj.update_duration()
+
     class Media:
         css = {
             "all": ("worklogs/styles/admin.css",)
@@ -93,7 +111,7 @@ class TaskAdmin(admin.ModelAdmin):
 class WorkLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'start'
     list_display = (
-       'task',
+       'task_link',
        'get_description',
        'project_link',
        'bugtracker_link',
@@ -102,7 +120,7 @@ class WorkLogAdmin(admin.ModelAdmin):
        'end',
        'toggle_active_button',
     )
-#    list_editable = ('state',)
+    list_editable = ('start', 'end',)
     list_filter = ('task__project', 'task__state', 'task__bugtracker', 'task')
     list_select_related = True
     search_fields = ('description', 'worklog__description', 'worklog__bugtracker_object_id')
@@ -113,6 +131,7 @@ class WorkLogAdmin(admin.ModelAdmin):
 
     def get_description(self, worklog):
         return worklog.description if worklog.description else worklog.task.description
+    get_description.short_description = _(u"description")
 
     def get_duration_display(self, worklog):
         kwargs = {
@@ -138,9 +157,15 @@ class WorkLogAdmin(admin.ModelAdmin):
     toggle_active_button.short_description = _(u"toggle")
 
     def bugtracker_link(self, worklog):
-        return """<a href="%s">%s/%s<a>""" % (worklog.task.bugtracker_url(), worklog.task.bugtracker.name, worklog.task.bugtracker_object_id)
+        if worklog.task.bugtracker:
+            return """<a href="%s">%s/%s<a>""" % (worklog.task.bugtracker_url(), worklog.task.bugtracker.name, worklog.task.bugtracker_object_id)
     bugtracker_link.allow_tags = True
     bugtracker_link.short_description = _("bugtracker")
+
+    def task_link(self, worklog):
+        return """<a href="/worklogs/task/%d/">%s<a>""" % (worklog.task.id, worklog.task.__unicode__())
+    task_link.allow_tags = True
+    task_link.short_description = _("task")
 
     def project_link(self, worklog):
         url = worklog.task.project.url

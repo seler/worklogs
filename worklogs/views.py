@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 from .models import Task, WorkLog
 
@@ -45,8 +46,10 @@ def task_stop(request, object_id):
     return HttpResponseRedirect(next)
 
 
-@login_required
+#@login_required
 def report(request):
+
+    user = User.objects.get(username='rselewonko')
 
     get_from_date = request.GET.get('from')
     get_to_date = request.GET.get('to')
@@ -64,9 +67,9 @@ def report(request):
         tmp = map(int, get_to_date.split('-'))
         to_date = datetime.datetime(*tmp)
     else:
-        to_date = from_date + datetime.timedelta(days=5)
+        to_date = from_date + datetime.timedelta(days=4)
 
-    entries = WorkLog.objects.in_range(from_date, to_date).filter(task__user=request.user)
+    entries = WorkLog.objects.in_range(from_date, to_date).filter(task__user=user)
 
     time_per_project = {}
     time_per_task = []
