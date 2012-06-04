@@ -195,11 +195,8 @@ class WorkLog(models.Model):
                     null=True,
                     verbose_name=_(u'end time'))
 
-    accounted = models.DecimalField(
-            blank=True,
-            decimal_places=4,
-            max_digits=8,
-            null=True,
+    accounted = models.BooleanField(
+            default=False,
             verbose_name=_(u"accounted"))
 
     objects = WorkLogManager()

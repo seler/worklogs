@@ -36,6 +36,7 @@ class TaskAdmin(admin.ModelAdmin):
         'mod_date',
         'state',
         'toggle_active_button',
+        'accounted'
     )
     inlines = (WorkLogInlineAdmin, NoteInlineAdmin)
     list_editable = ('state',)
@@ -57,18 +58,38 @@ class TaskAdmin(admin.ModelAdmin):
     get_duration_display.allow_tags = True
     get_duration_display.short_description = _(u"duration")
 
+    def accounted(self, task):
+        if task.worklogs.count():
+            a_n = task.worklogs.filter(accounted=True).count() / \
+                    float(task.worklogs.count()) * 100.
+            a_t = sum(map(lambda w: w.duration,
+                          task.worklogs.filter(accounted=True))) / \
+                    float(task.duration) * 100.
+            return "<span class=\"accounted %s\">" \
+                   "<a href=\"/worklogs/worklog/?task__id__exact=%d\">" \
+                   "time: %d%%<br>worklogs: %d%%</a><span>" % \
+                   ('good' if a_n == 100. else 'bad', task.id, a_t, a_n)
+        else:
+            return '-'
+    accounted.short_description = _(u"accounted")
+    accounted.allow_tags = True
+
     def toggle_active_button(self, task):
         if task.active:
-            link = """<a href="/worklogs/task/stop/{id}/?next=/worklogs/task/" title="click to stop">{icon} stop</a>"""
+            link = "<a href=\"/worklogs/task/stop/{id}/?next=/worklogs/task/\"" \
+                   "title=\"click to stop\">{icon} stop</a>"
         else:
-            link = """<a href="/worklogs/task/start/{id}/?next=/worklogs/task/" title="click to start">{icon} start</a>"""
+            link = "<a href=\"/worklogs/task/start/{id}/?next=/worklogs/task/\"" \
+                   "title=\"click to start\">{icon} start</a>"
         return link.format(id=task.id, icon=_boolean_icon(task.active))
     toggle_active_button.allow_tags = True
     toggle_active_button.short_description = _(u"toggle")
 
     def get_bugtracker_link(self, task):
         if task.bugtracker:
-            return """<a href="%s">%s/%s<a>""" % (task.bugtracker_url(), task.bugtracker.name, task.bugtracker_object_id)
+            return """<a href="%s">%s/%s<a>""" % (task.bugtracker_url(),
+                                                  task.bugtracker.name,
+                                                  task.bugtracker_object_id)
     get_bugtracker_link.allow_tags = True
     get_bugtracker_link.short_description = _("bugtracker")
 
@@ -119,8 +140,9 @@ class WorkLogAdmin(admin.ModelAdmin):
        'start',
        'end',
        'toggle_active_button',
+       'accounted',
     )
-    list_editable = ('start', 'end',)
+    list_editable = ('start', 'end', 'accounted')
     list_filter = ('task__project', 'task__state', 'task__bugtracker', 'task')
     list_select_related = True
     search_fields = ('description', 'worklog__description', 'worklog__bugtracker_object_id')

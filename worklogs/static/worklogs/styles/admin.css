@@ -1,3 +1,22 @@
 #result_list th:nth-child(3) {
     width: 150px;
 }
+
+#result_list td span.good {
+    color: #008C00;
+}
+
+#result_list td span.bad {
+    color: #CC0000;
+}
+
+
+#result_list td span.good a,
+#result_list td span.bad a {
+    color: inherit;
+}
+
+#result_list td span.good a:hover,
+#result_list td span.bad a:hover {
+    opacity: .75;
+}
