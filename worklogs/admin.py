@@ -48,13 +48,14 @@ class TaskAdmin(admin.ModelAdmin):
         kwargs = {
             'duration_formatted': task.get_duration_display(),
             'duration': task.duration,
+            'dupation': round(task.duration / 3600., 3),
         }
         if task.active:
             return """<span class="duration d{duration}s">
     {duration_formatted}
-</span>""".format(**kwargs)
+</span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
         else:
-            return kwargs.get('duration_formatted')
+            return """{duration_formatted}<br />{dupation}""".format(**kwargs)
     get_duration_display.allow_tags = True
     get_duration_display.short_description = _(u"duration")
 
@@ -159,13 +160,14 @@ class WorkLogAdmin(admin.ModelAdmin):
         kwargs = {
             'duration_formatted': worklog.get_duration_display(),
             'duration': worklog.duration,
+            'dupation': round(worklog.duration / 3600., 3),
         }
         if worklog.active:
             return """<span class="duration d{duration}s">
     {duration_formatted}
-</span>""".format(**kwargs)
+</span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
         else:
-            return kwargs.get('duration_formatted')
+            return """{duration_formatted}<br />{dupation}""".format(**kwargs)
     get_duration_display.allow_tags = True
     get_duration_display.short_description = _(u"duration")
 
