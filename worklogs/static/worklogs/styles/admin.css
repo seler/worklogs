@@ -20,3 +20,39 @@
 #result_list td span.bad a:hover {
     opacity: .75;
 }
+/*
+    STATE_NEW = 0
+    STATE_IN_PROGRESS = 1
+    STATE_WAITING = 2
+    STATE_READY = 3
+    STATE_RESOLVED = 4
+    STATE_CLOSED = 5
+    STATE_REJECTED = 6
+*/
+
+#result_list .state-0.row1,
+#result_list .state-6.row1 {
+    background-color: #ff9999;
+}
+
+#result_list .state-0.row2,
+#result_list .state-6.row2 {
+    background-color: #ffbbbb;
+}
+
+#result_list .state-1,
+#result_list .state-2 {
+    background-color: #FFFFCC
+}
+
+#result_list .state-3 {
+    background-color: #C3D9FF;
+}
+
+#result_list .state-4 {
+    background-color: #CDEB8B;
+}
+
+#result_list .state-5 {
+    opacity: .5;
+}
