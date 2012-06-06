@@ -60,7 +60,7 @@ class TaskAdmin(admin.ModelAdmin):
     get_duration_display.short_description = _(u"duration")
 
     def accounted(self, task):
-        if task.worklogs.count():
+        if task.worklogs.count() and task.duration:
             a_n = task.worklogs.filter(accounted=True).count() / \
                     float(task.worklogs.count()) * 100.
             a_t = sum(map(lambda w: w.duration,

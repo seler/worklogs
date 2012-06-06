@@ -30,19 +30,25 @@
     STATE_REJECTED = 6
 */
 
-#result_list .state-0.row1,
-#result_list .state-6.row1 {
+#result_list tr {
+    opacity: .9;
+}
+
+#result_list tr:hover {
+    opacity: 1;
+}
+
+#result_list .state-0,
+#result_list .state-6 {
     background-color: #ff9999;
 }
 
-#result_list .state-0.row2,
-#result_list .state-6.row2 {
-    background-color: #ffbbbb;
+#result_list .state-1 {
+    background-color: #FFFFCC;
 }
 
-#result_list .state-1,
 #result_list .state-2 {
-    background-color: #FFFFCC
+    background-color: #6BBA70;
 }
 
 #result_list .state-3 {
