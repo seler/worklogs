@@ -109,15 +109,35 @@ class TaskAdmin(admin.ModelAdmin):
         if obj is None:
             defaults.update({
                 'form': self.add_form,
+                'formfield_callback': self.get_formfield_callback(request),
             })
         defaults.update(kwargs)
         return super(TaskAdmin, self).get_form(request, obj, **defaults)
+
+    def get_formfield_callback(self, request):
+        current_project_id = request.session.get('current_project_id', None)
+        current_bugtracker_id = request.session.get('current_bugtracker_id', None)
+        user_id = request.user.id
+
+        def callback(field, **kwargs):
+            formfield = field.formfield(**kwargs)
+            if field.name == 'project':
+                formfield.initial = current_project_id
+            if field.name == 'bugtracker':
+                formfield.initial = current_bugtracker_id
+            if field.name == 'user':
+                formfield.initial = user_id
+            return formfield
+
+        return callback
 
     def get_urls(self):
         urls = super(TaskAdmin, self).get_urls()
         return task_admin_urls + urls
 
     def save_model(self, request, obj, form, change):
+        request.session['current_project_id'] = obj.project.id
+        request.session['current_bugtracker_id'] = obj.bugtracker.id
         obj.update_duration()
 
     class Media:
