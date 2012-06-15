@@ -1,0 +1,10 @@
+{% load i18n %}
+<ul class="worklog_state_list_filter">
+<li{% if choices.1.selected %} class="selected"{% endif %}>{{ title }}:
+{% if choices.1.selected %}
+<a href="{{ choices.0.query_string|iriencode }}">{% trans "No" %}</a>
+{% else %}
+<a href="{{ choices.1.query_string|iriencode }}">{% trans "Yes" %}</a>
+{% endif %}
+</li>
+</ul>

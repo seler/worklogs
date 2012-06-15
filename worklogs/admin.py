@@ -6,6 +6,7 @@ from django.contrib.admin.templatetags.admin_list import _boolean_icon
 from .models import Task, WorkLog, Project, BugTracker, Note
 from .urls import task_admin_urls
 from .forms import TaskAddForm
+from .list_filters import StateListFilters
 
 
 class WorkLogInlineAdmin(admin.TabularInline):
@@ -38,9 +39,10 @@ class TaskAdmin(admin.ModelAdmin):
         'toggle_active_button',
         'accounted'
     )
+    ordering = ('-active', '-add_date',)
     inlines = (WorkLogInlineAdmin, NoteInlineAdmin)
     list_editable = ('state',)
-    list_filter = ('project', 'state', 'bugtracker')
+    list_filter = StateListFilters + ['project', 'state', 'bugtracker']
     list_select_related = True
     search_fields = ('description', 'worklogs__description', 'bugtracker_object_id')
 
@@ -153,8 +155,8 @@ class TaskAdmin(admin.ModelAdmin):
 class WorkLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'start'
     list_display = (
-       'task_link',
        'get_description',
+       'task_link',
        'project_link',
        'bugtracker_link',
        'get_duration_display',
@@ -164,7 +166,7 @@ class WorkLogAdmin(admin.ModelAdmin):
        'accounted',
     )
     list_editable = ('start', 'end', 'accounted')
-    list_filter = ('task__project', 'task__state', 'task__bugtracker', 'task')
+    list_filter = ('task__project', 'accounted', 'task__state', 'task__bugtracker', 'task')
     list_select_related = True
     search_fields = ('description', 'worklog__description', 'worklog__bugtracker_object_id')
 
