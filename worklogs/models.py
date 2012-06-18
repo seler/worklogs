@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from .managers import TaskManager, WorkLogManager
 from .templatetags.worklogs_tags import seconds_to_readable
 
+def get_total_seconds(td): return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
 
 def firstof(*items):
     for i in items:
@@ -220,7 +221,7 @@ class WorkLog(models.Model):
             delta = self.end - self.start
         else:
             delta = datetime.datetime.now() - self.start
-        return int(round(delta.total_seconds()))
+        return int(round(get_total_seconds(delta)))
 
     @duration.setter
     def duration(self, seconds):
