@@ -32,6 +32,5 @@ class WorkLogManager(models.Manager):
                 models.Q(start__gte=start)
                 & (models.Q(end__gte=start) | models.Q(end__isnull=True))
                 & models.Q(start__lt=end)
-                & (models.Q(end__lt=end) | models.Q(end__isnull=True))
+                & (models.Q(end__lt=end) | models.Q(end__isnull=True)),
             )
-

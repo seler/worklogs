@@ -27,7 +27,6 @@ for state_id, state_name in Task.STATE_CHOICES:
     dict = {
         'title': _('Display ') + unicode(state_name),
         'parameter_name': 'state_%d' % state_id,
-        'state': state_id
+        'state': state_id,
     }
     StateListFilters.append(type(name, bases, dict))
-
