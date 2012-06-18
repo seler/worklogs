@@ -138,8 +138,10 @@ class TaskAdmin(admin.ModelAdmin):
         return task_admin_urls + urls
 
     def save_model(self, request, obj, form, change):
-        request.session['current_project_id'] = obj.project.id
-        request.session['current_bugtracker_id'] = obj.bugtracker.id
+        if obj.project.id:
+            request.session['current_project_id'] = obj.project.id
+        if obj.bugtracker.id:
+            request.session['current_bugtracker_id'] = obj.bugtracker.id
         obj.update_duration()
 
     class Media:
