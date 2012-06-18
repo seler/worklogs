@@ -1,2 +1,7 @@
 syntax: glob
+*.db3
+*.pyc
+*.mo
+*.swp
+*~
 local_settings.py

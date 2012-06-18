@@ -49,7 +49,7 @@ def task_stop(request, object_id):
 #@login_required
 def report(request):
 
-    user = User.objects.get(username='rselewonko')
+    user = User.objects.get(username='admin')
 
     get_from_date = request.GET.get('from')
     get_to_date = request.GET.get('to')
@@ -96,7 +96,7 @@ def report(request):
         else:
             tasks_per_day[date] = {
                     'time': entry.duration,
-                    'tasks': [[entry.task, entry.duration]]
+                    'tasks': [[entry.task, entry.duration]],
                 }
 
         if entry.task.project in time_per_project:
@@ -110,7 +110,7 @@ def report(request):
         else:
             time_per_project[entry.task.project] = {
                     'time': entry.duration,
-                    'tasks': [[entry.task, entry.duration]]
+                    'tasks': [[entry.task, entry.duration]],
                 }
 
         # worklogs_plot
