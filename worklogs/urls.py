@@ -12,4 +12,3 @@ task_admin_urls = patterns('',
     url(r'^start/(?P<object_id>\d+)/$', task_start, name='task_start'),
     url(r'^stop/(?P<object_id>\d+)/$', task_stop, name='task_stop'),
 )
-

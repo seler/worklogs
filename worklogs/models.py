@@ -11,7 +11,10 @@ from django.core.urlresolvers import reverse
 from .managers import TaskManager, WorkLogManager
 from .templatetags.worklogs_tags import seconds_to_readable
 
-def get_total_seconds(td): return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
+
+def get_total_seconds(td):
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
+
 
 def firstof(*items):
     for i in items:
@@ -100,7 +103,10 @@ class Task(models.Model):
         get_latest_by = 'add_date'
 
     def __unicode__(self):
-        return "{0}/{1}".format(self.bugtracker.name, self.bugtracker_object_id)
+        try:
+            return "{0}/{1}".format(self.bugtracker.name, self.bugtracker_object_id)
+        except AttributeError:
+            return "{0}".format(self.description)
 
     def get_bugtracker_id(self):
         return '#%s' % self.bugtracker_object_id
@@ -297,4 +303,3 @@ class Note(models.Model):
 
     def __unicode__(self):
         return self.note[:min(60, len(self.note))] + u'...'
-

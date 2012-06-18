@@ -37,7 +37,7 @@ class TaskAdmin(admin.ModelAdmin):
         'mod_date',
         'state',
         'toggle_active_button',
-        'accounted'
+        'accounted',
     )
     ordering = ('-active', '-add_date',)
     inlines = (WorkLogInlineAdmin, NoteInlineAdmin)
@@ -138,15 +138,19 @@ class TaskAdmin(admin.ModelAdmin):
         return task_admin_urls + urls
 
     def save_model(self, request, obj, form, change):
-        if obj.project.id:
+        try:
             request.session['current_project_id'] = obj.project.id
-        if obj.bugtracker.id:
+        except AttributeError:
+            pass
+        try:
             request.session['current_bugtracker_id'] = obj.bugtracker.id
+        except AttributeError:
+            pass
         obj.update_duration()
 
     class Media:
         css = {
-            "all": ("worklogs/styles/admin.css",)
+                "all": ("worklogs/styles/admin.css", ),
         }
         js = (
             "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js",
@@ -240,7 +244,7 @@ class WorkLogAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            "all": ("worklogs/styles/admin.css",)
+            "all": ("worklogs/styles/admin.css", ),
         }
         js = (
             "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js",

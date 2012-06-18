@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
+#import os
 
 from django import forms
-from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+#from django.conf import settings
+#from django.utils.translation import ugettext_lazy as _
 
 from .models import Task
 
