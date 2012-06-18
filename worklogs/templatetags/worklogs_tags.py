@@ -46,4 +46,4 @@ def seconds_to_time(seconds):
 @register.filter
 def date_to_hours(date):
     seconds = ((date.hour * 3600) + (date.minute * 60) + (date.second))
-    return '{}'.format(round(seconds / 3600., 4))
+    return '{0}'.format(round(seconds / 3600., 4))

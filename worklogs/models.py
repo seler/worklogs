@@ -49,7 +49,9 @@ class Task(models.Model):
 
     project = models.ForeignKey('Project',
                     verbose_name=_(u'project'),
-                    related_name='tasks')
+                    related_name='tasks',
+                    blank=True,
+                    null=True)
 
     bugtracker = models.ForeignKey('BugTracker',
             blank=True,
@@ -97,7 +99,7 @@ class Task(models.Model):
         get_latest_by = 'add_date'
 
     def __unicode__(self):
-        return "{}/{}".format(self.bugtracker.name, self.bugtracker_object_id)
+        return "{0}/{1}".format(self.bugtracker.name, self.bugtracker_object_id)
 
     def get_bugtracker_id(self):
         return '#%s' % self.bugtracker_object_id
