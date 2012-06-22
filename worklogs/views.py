@@ -49,7 +49,7 @@ def task_stop(request, object_id):
 #@login_required
 def report(request):
 
-    user = User.objects.get(username='admin')
+    user = request.user
 
     get_from_date = request.GET.get('from')
     get_to_date = request.GET.get('to')
