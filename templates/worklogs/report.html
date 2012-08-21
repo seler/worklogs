@@ -12,12 +12,6 @@
     <script src="{% static "scripts/ui/jquery.ui.sortable.js" %}"></script>
     <script src="{% static "scripts/ui/jquery.ui.tabs.js" %}"></script>
     <script src="{% static "scripts/ui/jquery.ui.datepicker.js" %}"></script>
-    <!--[if lt IE 9]><script language="javascript type="text/javascript" src="{% static "jqplot/excanvas.js" %}"></script><![endif]-->
-    <script src="{% static "jqplot/jquery.jqplot.min.js" %}"></script>
-    <script src="{% static "jqplot/plugins/jqplot.dateAxisRenderer.min.js" %}"></script>
-    <script src="{% static "jqplot/plugins/jqplot.ohlcRenderer.min.js" %}"></script>
-    <script src="{% static "jqplot/plugins/jqplot.highlighter.min.js" %}"></script>
-    <link rel="stylesheet" href="{% static "jqplot/jquery.jqplot.css" %}" />
     <script>
         $(function() {
             var tabs = $( "#reports" ).tabs({
@@ -47,50 +41,6 @@
                 this.setAttribute('rows', rows + 1);
             });
 
-ohlc = [
-  ['05-07-2012 8:00', 16, 16, 13, 13],
-  ['05-07-2012 16:00', 14, 14, 10, 10],
-];
-ohlc2 = [
-  ['05-07-2012 14:00', 13, 13, 8, 8],
-];
-
-
-  {% for ticket, data in worklogs_plot.items %}
- {{ ticket }} = [{% for row in data %}
- ['{{ row.0|date:"m-d-Y H:i" }}', -{{ row.0|date_to_hours }}, -{{ row.0|date_to_hours }}, -{{ row.1|date_to_hours }}, -{{ row.1|date_to_hours }}],
-  {% endfor %}];
-  {% endfor %}
-
-  var plot2 = $.jqplot('chartdiv',[{{ worklogs_plot|join:',' }}],{
-//  var plot2 = $.jqplot('chartdiv',[ohlc, ohlc2],{
-    seriesDefaults:{yaxis:'y2axis'},
-    axes: {
-      xaxis: {
-        renderer:$.jqplot.DateAxisRenderer,
-        tickOptions:{formatString:'%Y-%#m-%#d'}, 
-        min: "{{ worklogs_plot_start|date:"m-d-Y" }}",
-        max: "{{ worklogs_plot_end|date:"m-d-Y" }}",
-        tickInterval: "1 day",
-      },
-      y2axis: {
-        tickOptions:{formatString:'%d:00'}
-      }
-    },
-    // To make a candle stick chart, set the "candleStick" option to true.
-    series: [{% for ticket in worklogs_plot %}
-      {
-        renderer:$.jqplot.OHLCRenderer, 
-        rendererOptions:{ candleStick:true },
-        label:'{{ticket}}'
-    },
-    {% endfor %}],
-    legend: {
-            show: true,
-            placement: 'insideGrid'
-        }
-  });
-        });
     </script>
     <style>
         textarea.copy {
