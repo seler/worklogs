@@ -2,108 +2,109 @@
 {% load worklogs_tags i18n static %}
 
 {% block extrahead %}
-    <link rel="stylesheet" href="{% static "themes/base/jquery.ui.all.css" %}">
-    <link rel="stylesheet" href="{% static "styles/demos.css" %}">
-    <script src="{% static "scripts/jquery-1.7.2.js" %}"></script>
-    <script src="{% static "scripts/jquery.cookie.js" %}"></script>
-    <script src="{% static "scripts/ui/jquery.ui.core.js" %}"></script>
-    <script src="{% static "scripts/ui/jquery.ui.widget.js" %}"></script>
-    <script src="{% static "scripts/ui/jquery.ui.mouse.js" %}"></script>
-    <script src="{% static "scripts/ui/jquery.ui.sortable.js" %}"></script>
-    <script src="{% static "scripts/ui/jquery.ui.tabs.js" %}"></script>
-    <script src="{% static "scripts/ui/jquery.ui.datepicker.js" %}"></script>
-    <script>
-        $(function() {
-            var tabs = $( "#reports" ).tabs({
-                cookie: {expires: 1}
-            });
-            tabs.tabs().find( ".ui-tabs-nav" ).sortable({
-                axis: "x"
-	    });
-            var dates = $( "#from, #to" ).datepicker({
-                changeMonth: true,
-                changeYear: true,
-                maxDate: "+0D",
-                firstDay: 1,
-                dateFormat: 'yy-mm-dd',
-                onSelect: function( selectedDate ) {
-                    var option = this.id == "from" ? "minDate" : "maxDate",
-                    instance = $( this ).data( "datepicker" ),
-                    date = $.datepicker.parseDate(
-                            instance.settings.dateFormat ||
-                            $.datepicker._defaults.dateFormat,
-                            selectedDate, instance.settings );
-                    dates.not( this ).datepicker( "option", option, date );
-                }
-            });
-            $("textarea.copy").each(function(){
-                var rows = this.value.split("\n").length;
-                this.setAttribute('rows', rows + 1);
-            });
-
-    </script>
-    <style>
-        textarea.copy {
-            font-family: monospace;
-            font-size: 12px;
-            border: none;
-        }
-    </style>
+<link rel="stylesheet" href="{% static "themes/base/jquery.ui.all.css" %}">
+<link rel="stylesheet" href="{% static "styles/demos.css" %}">
+<script src="{% static "scripts/jquery-1.7.2.js" %}"></script>
+<script src="{% static "scripts/jquery.cookie.js" %}"></script>
+<script src="{% static "scripts/ui/jquery.ui.core.js" %}"></script>
+<script src="{% static "scripts/ui/jquery.ui.widget.js" %}"></script>
+<script src="{% static "scripts/ui/jquery.ui.mouse.js" %}"></script>
+<script src="{% static "scripts/ui/jquery.ui.sortable.js" %}"></script>
+<script src="{% static "scripts/ui/jquery.ui.tabs.js" %}"></script>
+<script src="{% static "scripts/ui/jquery.ui.datepicker.js" %}"></script>
+<script>
+	$(document).ready(function() {
+		var tabs = $( "#reports" ).tabs({
+			cookie: {expires: 1}
+		});
+		tabs.tabs().find( ".ui-tabs-nav" ).sortable({
+			axis: "x"
+		});
+		var dates = $( "#from, #to" ).datepicker({
+			changeMonth: true,
+			changeYear: true,
+			maxDate: "+0D",
+			firstDay: 1,
+			dateFormat: 'yy-mm-dd',
+			onSelect: function( selectedDate ) {
+				var option = this.id == "from" ? "minDate" : "maxDate",
+				instance = $( this ).data( "datepicker" ),
+				date = $.datepicker.parseDate(
+				instance.settings.dateFormat ||
+				$.datepicker._defaults.dateFormat,
+				selectedDate, instance.settings );
+				dates.not( this ).datepicker( "option", option, date );
+			}
+		});
+		$("textarea.copy").each(function(){
+			var rows = this.value.split("\n").length;
+			this.setAttribute('rows', rows + 1);
+		});
+	});
+</script>
+<style>
+	textarea.copy {
+		font-family: monospace;
+		font-size: 12px;
+		border: none;
+	}
+</style>
 
 {% endblock %}
 
 {% block content %}
 <div class="demo">
-    <form method="GET">
-        <label for="from">From</label>
-        <input type="text" id="from" name="from" value="{{ from.isoformat }}"/>
-        <label for="to">to</label>
-        <input type="text" id="to" name="to" value="{{ to.isoformat }}"/>
-        <input type="submit" />
-    </form>
-    {% if time_per_task %}
-    <div id="reports">
-        <ul>
-            <li><a href="#time_per_task">{% trans "time per task" %}</a></li>
-            <li><a href="#tasks_status">{% trans "tasks status" %}</a></li>
-            <li><a href="#tasks_per_day">{% trans "tasks per day" %}</a></li>
-            <li><a href="#time_per_project">{% trans "time per project" %}</a></li>
-            <li><a href="#tasks_per_day_plot">{% trans "plot" %}</a></li>
-        </ul>
-        <div id="time_per_task">
-        <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+	<form method="GET">
+		<label for="from">From</label>
+		<input type="text" id="from" name="from" value="{{ from.isoformat }}"/>
+		<label for="to">to</label>
+		<input type="text" id="to" name="to" value="{{ to.isoformat }}"/>
+		<input type="submit" />
+	</form>
+	{% if time_per_task %}
+	<div id="reports">
+		<ul>
+			<li><a href="#time_per_task">{% trans "time per task" %}</a></li>
+			<li><a href="#tasks_status">{% trans "tasks status" %}</a></li>
+			<li><a href="#tasks_per_day">{% trans "tasks per day" %}</a></li>
+			<li><a href="#time_per_project">{% trans "time per project" %}</a></li>
+			<li><a href="#tasks_eta">{% trans "tasks eta" %}</a></li>
+		</ul>
+		<div id="time_per_task">
+			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
 {% endif %}{% for task, duration in time_per_task %}
 {{ task.description }} ({{duration|seconds_to_time}}) - {{ task.get_state_display }}
 {{ task.bugtracker_url }}
 {% endfor %}</textarea>
-    </div>
-        <div id="tasks_status">
-        <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+		</div>
+		<div id="tasks_status">
+			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
 {% endif %}{% for task, duration in time_per_task %}
 {{ task.bugtracker_url }} - {{ task.get_state_display }}
 {% endfor %}</textarea>
-    </div>
+		</div>
 
-    <div id="tasks_per_day">
-        <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+		<div id="tasks_per_day">
+			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
 {% endif %}{% for date, data in tasks_per_day.items %}
 {{ date }} ({{ data.time|seconds_to_time }}):
-    {% for task, duration in data.tasks %}
-    {{ task.description }} ({{duration|seconds_to_time}})
-    {{ task.bugtracker_url }}
-    {% endfor %}{% endfor %}</textarea>
-    </div>
-    <div id="time_per_project">
-        <textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+{% for task, duration in data.tasks %}
+{{ task.description }} ({{duration|seconds_to_time}})
+{{ task.bugtracker_url }}
+{% endfor %}{% endfor %}</textarea>
+		</div>
+		<div id="time_per_project">
+			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
 {% endif %}{% for project, data in time_per_project.items %}
 {{ project }}: {{ data.time|seconds_to_hours:2|floatformat }}h{% endfor %}</textarea>
-    </div>
-    <div id="tasks_per_day_plot">
-        <div id="chartdiv" style="height:500px;width:100%; "></div>
-    </div>
+		</div>
+		<div id="tasks_eta">
+			<textarea class="copy" rows="24" cols="80">{% for task in tasks %}{{ task.bugtracker_url }}: {{ task.eta }}h
+{% endfor %}</textarea>
+		</div>
+	</div>
+	{% else %}
+	{% trans "No tasks in selected date range" %}
+	{% endif %}
 </div>
-{% else %}
-    {% trans "No tasks in selected date range" %}
-{% endif %}
-
 {% endblock %}

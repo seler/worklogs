@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
 from .models import Task, WorkLog
+from .rozlicz import _rozlicz
 
 current_year = lambda: datetime.datetime.now().isocalendar()[0]
 current_week = lambda: datetime.datetime.now().isocalendar()[1]
@@ -46,7 +47,7 @@ def task_stop(request, object_id):
     return HttpResponseRedirect(next)
 
 
-#@login_required
+@login_required
 def report(request):
 
     user = request.user
@@ -124,7 +125,10 @@ def report(request):
         else:
             worklogs_plot[ticket] = [row]
 
+    tasks = Task.objects.filter(add_date__gte=from_date, add_date__lte=to_date)
+
     context_vars = {
+        'tasks': tasks,
         'from': from_date.date(),
         'to': to_date.date(),
         'tasks_per_day': tasks_per_day,
@@ -135,3 +139,15 @@ def report(request):
         'worklogs_plot_end': to_date.date() + datetime.timedelta(days=1),
     }
     return render_to_response('worklogs/report.html', context_vars)
+
+
+@login_required
+def rozlicz(request, object_id):
+    task = Task.objects.get(id=object_id)
+    next = request.GET.get('next', '/')
+    result = _rozlicz(task)
+    if not result:
+        messages.success(request, _(u'Task "{0}" accounted.').format(task))
+    else:
+        messages.error(request, _(u'Task "{0}" has`t been accounted. {1}').format(task, result))
+    return HttpResponseRedirect(next)

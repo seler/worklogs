@@ -7,6 +7,7 @@ from .models import Task, WorkLog, Project, BugTracker, Note
 from .urls import task_admin_urls
 from .forms import TaskAddForm
 from .list_filters import StateListFilters
+from django.contrib import messages
 
 
 class WorkLogInlineAdmin(admin.TabularInline):
@@ -158,6 +159,19 @@ class TaskAdmin(admin.ModelAdmin):
         )
 
 
+from .rozlicz import _rozlicz
+
+
+def rozlicz_action(modeladmin, request, queryset):
+    for obj in queryset:
+        result = _rozlicz(obj)
+        if not result:
+            messages.success(request, _(u'Task "{0}" accounted for {1}.').format(obj.task, obj.get_duration_display()))
+        else:
+            messages.error(request, _(u'Task "{0}" not accounted. {1}').format(obj.task, result))
+rozlicz_action.short_description = "Rozlicz"
+
+
 class WorkLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'start'
     list_display = (
@@ -171,10 +185,11 @@ class WorkLogAdmin(admin.ModelAdmin):
        'toggle_active_button',
        'accounted',
     )
-    list_editable = ('start', 'end', 'accounted')
+    list_editable = ('start', 'end')
     list_filter = ('task__project', 'accounted', 'task__state', 'task__bugtracker', 'task')
     list_select_related = True
     search_fields = ('description', 'worklog__description', 'worklog__bugtracker_object_id')
+    actions = [rozlicz_action]
 
     def get_bugtracker_id(self, worklog):
         return '#%s' % worklog.task.bugtracker_object_id
