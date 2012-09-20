@@ -84,6 +84,7 @@ def _rozlicz(worklog):
     url = worklog.task.bugtracker_url()
 
     def _request(url):
+        url = url.replace(' ', '%20')
         request = urllib2.Request(url)
         request.add_header('Cookie', C.output(header=""))
         response = urllib2.urlopen(request)
@@ -134,6 +135,6 @@ from .models import BugTracker, Task
 
 def make_mantis_task(bugtracker_object_id, bugtracker_id):
     bugtracker = BugTracker.objects.get(bugtracker_id)
-    
+
 
 
