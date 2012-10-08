@@ -115,7 +115,8 @@ def _rozlicz(worklog):
     form['CzasPracyMin'] = str(minutes)
     form['CzasPracyMin-input'] = str(minutes)
     form['CzasPracyGodz'] = str(hours)
-    form['OpisCzynnosci'] = 'prace programistyczne'
+    form['OpisCzynnosci'] = """Prace programistyczne.
+{0} - {1}""".format(worklog.start, worklog.end)
 
     request = form.click()
     request.add_header('Cookie', C.output(header=""))
@@ -135,6 +136,3 @@ from .models import BugTracker, Task
 
 def make_mantis_task(bugtracker_object_id, bugtracker_id):
     bugtracker = BugTracker.objects.get(bugtracker_id)
-
-
-
