@@ -7,6 +7,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^favicon.ico$', 'django.views.generic.simple.redirect_to', {'url': settings.STATIC_URL + 'images/favicon.png'}),
     url(r'^report/', include('worklogs.urls')),
     url(r'^', include(admin.site.urls)),
 )
