@@ -42,7 +42,10 @@ class TaskAdmin(admin.ModelAdmin):
     list_editable = ('state',)
     list_filter = StateListFilters + ['project', 'state', 'bugtracker']
     list_select_related = True
-    search_fields = ('description', 'worklogs__description', 'bugtracker_object_id')
+    search_fields = ('description',
+                     'worklogs__description',
+                     'bugtracker_object_id')
+    save_on_top = True
 
     def get_duration_display(self, task):
         kwargs = {
@@ -53,7 +56,7 @@ class TaskAdmin(admin.ModelAdmin):
         if task.active:
             return """<span class="duration d{duration}s">
     {duration_formatted}
-</span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
+    </span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
         else:
             return """{duration_formatted}<br />{dupation}""".format(**kwargs)
     get_duration_display.allow_tags = True
@@ -61,15 +64,14 @@ class TaskAdmin(admin.ModelAdmin):
 
     def accounted(self, task):
         if task.worklogs.count() and task.duration:
-            a_n = task.worklogs.filter(accounted=True).count() / \
-                    float(task.worklogs.count()) * 100.
+            a_n = task.worklogs.filter(
+                accounted=True).count() / float(task.worklogs.count()) * 100.
             a_t = sum(map(lambda w: w.duration,
-                          task.worklogs.filter(accounted=True))) / \
-                    float(task.duration) * 100.
+                          task.worklogs.filter(accounted=True))) / float(task.duration) * 100.
             return "<span class=\"accounted %s\">" \
-                   "<a href=\"/worklogs/worklog/?task__id__exact=%d\">" \
-                   "time: %d%%<br>worklogs: %d%%</a><span>" % \
-                   ('good' if a_n == 100. else 'bad', task.id, a_t, a_n)
+                "<a href=\"/worklogs/worklog/?task__id__exact=%d\">" \
+                "time: %d%%<br>worklogs: %d%%</a><span>" % \
+                ('good' if a_n == 100. else 'bad', task.id, a_t, a_n)
         else:
             return '-'
     accounted.short_description = _(u"accounted")
@@ -78,11 +80,11 @@ class TaskAdmin(admin.ModelAdmin):
     def toggle_active_button(self, task):
         if task.active:
             link = "<a href=\"/worklogs/task/stop/{id}/?next=/worklogs/task/\"" \
-                   "title=\"click to stop\">{icon} stop</a>"
+                "title=\"click to stop\">{icon} stop</a>"
         else:
             link = "<a href=\"/worklogs/task/start/{id}/?next=/worklogs/task/\"" \
-                   "title=\"click to start\">{icon} start</a>"
-        return link.format(id=task.id, icon=_boolean_icon(task.active))
+                "title=\"click to start\">{icon} start</a>"
+            return link.format(id=task.id, icon=_boolean_icon(task.active))
     toggle_active_button.allow_tags = True
     toggle_active_button.short_description = _(u"toggle")
 
@@ -111,23 +113,24 @@ class TaskAdmin(admin.ModelAdmin):
                 'form': self.add_form,
                 'formfield_callback': self.get_formfield_callback(request),
             })
-        defaults.update(kwargs)
-        return super(TaskAdmin, self).get_form(request, obj, **defaults)
+            defaults.update(kwargs)
+            return super(TaskAdmin, self).get_form(request, obj, **defaults)
 
     def get_formfield_callback(self, request):
         current_project_id = request.session.get('current_project_id', None)
-        current_bugtracker_id = request.session.get('current_bugtracker_id', None)
+        current_bugtracker_id = request.session.get(
+            'current_bugtracker_id', None)
         user_id = request.user.id
 
         def callback(field, **kwargs):
             formfield = field.formfield(**kwargs)
             if field.name == 'project':
                 formfield.initial = current_project_id
-            if field.name == 'bugtracker':
-                formfield.initial = current_bugtracker_id
-            if field.name == 'user':
-                formfield.initial = user_id
-            return formfield
+                if field.name == 'bugtracker':
+                    formfield.initial = current_bugtracker_id
+                    if field.name == 'user':
+                        formfield.initial = user_id
+                        return formfield
 
         return callback
 
@@ -148,7 +151,7 @@ class TaskAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-                "all": ("worklogs/styles/admin.css", ),
+            "all": ("worklogs/styles/admin.css", ),
         }
         js = (
             "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js",
@@ -163,30 +166,35 @@ def rozlicz_action(modeladmin, request, queryset):
     for obj in queryset:
         result = _rozlicz(obj)
         if not result:
-            messages.success(request, _(u'Task "{0}" accounted for {1}.').format(obj.task, obj.get_duration_display()))
+            messages.success(request, _(u'Task "{0}" accounted for {1}.')
+                             .format(obj.task, obj.get_duration_display()))
         else:
-            messages.error(request, _(u'Task "{0}" not accounted. {1}').format(obj.task, result))
-rozlicz_action.short_description = "Rozlicz"
+            messages.error(request, _(
+                u'Task "{0}" not accounted. {1}').format(obj.task, result))
+            rozlicz_action.short_description = "Rozlicz"
 
 
 class WorkLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'start'
     list_display = (
-       'get_description',
-       'task_link',
-       'project_link',
-       'bugtracker_link',
-       'get_duration_display',
-       'start',
-       'end',
-       'toggle_active_button',
-       'accounted',
+        'get_description',
+        'task_link',
+        'project_link',
+        'bugtracker_link',
+        'get_duration_display',
+        'start',
+        'end',
+        'toggle_active_button',
+        'accounted',
     )
     list_editable = ('start', 'end')
-    list_filter = ('task__project', 'accounted', 'task__state', 'task__bugtracker', 'task')
+    list_filter = ('task__project', 'accounted', 'task__state',
+                   'task__bugtracker', 'task')
     list_select_related = True
-    search_fields = ('description', 'worklog__description', 'worklog__bugtracker_object_id')
+    search_fields = ('description', 'worklog__description',
+                     'worklog__bugtracker_object_id')
     actions = [rozlicz_action]
+    save_on_top = True
 
     def get_bugtracker_id(self, worklog):
         return '#%s' % worklog.task.bugtracker_object_id
@@ -205,7 +213,7 @@ class WorkLogAdmin(admin.ModelAdmin):
         if worklog.active:
             return """<span class="duration d{duration}s">
     {duration_formatted}
-</span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
+    </span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
         else:
             return """{duration_formatted}<br />{dupation}""".format(**kwargs)
     get_duration_display.allow_tags = True
@@ -216,7 +224,7 @@ class WorkLogAdmin(admin.ModelAdmin):
             link = """<a href="/worklogs/task/stop/{id}/?next=/worklogs/worklog/" title="click to stop">{icon} stop</a>"""
         else:
             link = """<a href="/worklogs/task/start/{id}/?next=/worklogs/worklog/" title="click to start">{icon} start</a>"""
-        return link.format(id=worklog.task.id, icon=_boolean_icon(worklog.active))
+            return link.format(id=worklog.task.id, icon=_boolean_icon(worklog.active))
     toggle_active_button.allow_tags = True
     toggle_active_button.short_description = _(u"toggle")
 
