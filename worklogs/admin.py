@@ -32,10 +32,6 @@ class TaskAdmin(admin.ModelAdmin):
         'project_link',
         'get_bugtracker_link',
         'get_duration_display',
-        'time_left',
-        'get_eta_display',
-        'add_date',
-        'mod_date',
         'state',
         'toggle_active_button',
         'accounted',
@@ -64,11 +60,9 @@ class TaskAdmin(admin.ModelAdmin):
 
     def accounted(self, task):
         if task.worklogs.count() and task.duration:
-            a_n = task.worklogs.filter(accounted=True).count() / \
-                    float(task.worklogs.count()) * 100.
+            a_n = task.worklogs.filter(accounted=True).count() / float(task.worklogs.count()) * 100.
             a_t = sum(map(lambda w: w.duration,
-                          task.worklogs.filter(accounted=True))) / \
-                    float(task.duration) * 100.
+                          task.worklogs.filter(accounted=True))) / float(task.duration) * 100.
             return "<span class=\"accounted %s\">" \
                    "<a href=\"/worklogs/worklog/?task__id__exact=%d\">" \
                    "time: %d%%<br>worklogs: %d%%</a><span>" % \
@@ -151,7 +145,7 @@ class TaskAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-                "all": ("worklogs/styles/admin.css", ),
+            "all": ("worklogs/styles/admin.css", ),
         }
         js = (
             "http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js",
@@ -175,15 +169,15 @@ rozlicz_action.short_description = "Rozlicz"
 class WorkLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'start'
     list_display = (
-       'get_description',
-       'task_link',
-       'project_link',
-       'bugtracker_link',
-       'get_duration_display',
-       'start',
-       'end',
-       'toggle_active_button',
-       'accounted',
+        'get_description',
+        'task_link',
+        'project_link',
+        'bugtracker_link',
+        'get_duration_display',
+        'start',
+        'end',
+        'toggle_active_button',
+        'accounted',
     )
     list_editable = ('start', 'end')
     list_filter = ('task__project', 'accounted', 'task__state', 'task__bugtracker', 'task')
