@@ -32,6 +32,7 @@ class TaskAdmin(admin.ModelAdmin):
         'project_link',
         'get_bugtracker_link',
         'get_duration_display',
+        'mod_date',
         'state',
         'toggle_active_button',
         'accounted',
@@ -41,7 +42,10 @@ class TaskAdmin(admin.ModelAdmin):
     list_editable = ('state',)
     list_filter = StateListFilters + ['project', 'state', 'bugtracker']
     list_select_related = True
-    search_fields = ('description', 'worklogs__description', 'bugtracker_object_id')
+    search_fields = ('description',
+                     'worklogs__description',
+                     'bugtracker_object_id')
+    save_on_top = True
 
     def get_duration_display(self, task):
         kwargs = {
@@ -52,7 +56,7 @@ class TaskAdmin(admin.ModelAdmin):
         if task.active:
             return """<span class="duration d{duration}s">
     {duration_formatted}
-</span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
+    </span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
         else:
             return """{duration_formatted}<br />{dupation}""".format(**kwargs)
     get_duration_display.allow_tags = True
@@ -184,6 +188,7 @@ class WorkLogAdmin(admin.ModelAdmin):
     list_select_related = True
     search_fields = ('description', 'worklog__description', 'worklog__bugtracker_object_id')
     actions = [rozlicz_action]
+    save_on_top = True
 
     def get_bugtracker_id(self, worklog):
         return '#%s' % worklog.task.bugtracker_object_id
@@ -202,7 +207,7 @@ class WorkLogAdmin(admin.ModelAdmin):
         if worklog.active:
             return """<span class="duration d{duration}s">
     {duration_formatted}
-</span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
+    </span><br /><span class="dupation">{dupation}</span>""".format(**kwargs)
         else:
             return """{duration_formatted}<br />{dupation}""".format(**kwargs)
     get_duration_display.allow_tags = True
@@ -213,7 +218,7 @@ class WorkLogAdmin(admin.ModelAdmin):
             link = """<a href="/worklogs/task/stop/{id}/?next=/worklogs/worklog/" title="click to stop">{icon} stop</a>"""
         else:
             link = """<a href="/worklogs/task/start/{id}/?next=/worklogs/worklog/" title="click to start">{icon} start</a>"""
-        return link.format(id=worklog.task.id, icon=_boolean_icon(worklog.active))
+            return link.format(id=worklog.task.id, icon=_boolean_icon(worklog.active))
     toggle_active_button.allow_tags = True
     toggle_active_button.short_description = _(u"toggle")
 
