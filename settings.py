@@ -39,7 +39,7 @@ API_IPS = (
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'WorkHours.db3',
+        'NAME': '../WorkLogs.db3',
     },
 }
 
