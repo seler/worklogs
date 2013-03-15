@@ -37,7 +37,7 @@ class TaskAdmin(admin.ModelAdmin):
         'toggle_active_button',
         'accounted',
     )
-    ordering = ('-active', '-add_date',)
+    ordering = ('-add_date',)
     inlines = (WorkLogInlineAdmin, NoteInlineAdmin)
     list_editable = ('state',)
     list_filter = StateListFilters + ['project', 'state', 'bugtracker']

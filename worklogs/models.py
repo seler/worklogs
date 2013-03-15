@@ -123,6 +123,8 @@ class Task(models.Model):
         Task.objects.stop_active()
 
         # mark self active
+        if self.state == self.STATE_NEW:
+            self.state = self.STATE_IN_PROGRESS
         self.active = True
         self.save()
 
