@@ -47,6 +47,40 @@ def task_stop(request, object_id):
     return HttpResponseRedirect(next)
 
 
+from django import forms
+
+
+class TasksForm(forms.Form):
+    message = forms.CharField(widget=forms.Textarea())
+
+from .mantis import make_mantis_task
+import re
+from django.shortcuts import render
+
+
+@login_required
+def make_tasks(request):
+    next = request.GET.get('next', '/worklogs/task/')
+    if request.method == 'POST':
+        form = TasksForm(request.POST)
+        if form.is_valid():
+            tickets = re.findall(r'\d{5,8}', form.cleaned_data.get('message'))
+            for ticket in tickets:
+                try:
+                    task = make_mantis_task(ticket)
+                except Exception, e:
+                    messages.error(request, _(u'Task "{0}" nie dodany. {1}').format(ticket, e))
+                else:
+                    messages.success(request, _(u'Task "{1}" dodany.').format(task.id, task.description))
+            return HttpResponseRedirect(next)
+    else:
+        form = TasksForm()
+
+    return render(request, 'worklogs/make_tasks.html', {
+        'form': form,
+    })
+
+
 @login_required
 def report(request):
 

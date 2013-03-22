@@ -4,3 +4,14 @@
 {#% pagination cl %#}
 {{ block.super }}
 {% endblock %}
+
+    {% block object-tools %}
+        <ul class="object-tools" style="margin-right: 100px;">
+            <li>
+              <a href="/worklogs/task/make_tasks/{% if is_popup %}?_popup=1{% endif %}">
+                  Make Tasks
+              </a>
+            </li>
+        </ul>
+        {{ block.super }}
+    {% endblock %}
