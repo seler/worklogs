@@ -5,3 +5,4 @@ syntax: glob
 *.swp
 *~
 local_settings.py
+static/*
