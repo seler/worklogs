@@ -1,3 +1,4 @@
+{% load static %}
 <html>
     <head>
         <title>WorkLogs</title>
@@ -5,8 +6,8 @@
         <meta name="keywords" content="WorkLogs" />
         <meta name="author" content="Rafał Selewońko <rselewonko@murator.com.pl>" />
 		<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-		<link rel="icon" href="{{ STATIC_URL }}/images/favicon.png" type="image/png">
-		<link rel="shortcut icon" href="{{ STATIC_URL }}/images/favicon.png" type="image/png">
+        <link rel="icon" href="{% static "images/favicon.png" %}" type="image/png">
+        <link rel="shortcut icon" href="{% static "images/favicon.png" %}" type="image/png">
         {% block extrahead %}{% endblock %}
     </head>
     <body>

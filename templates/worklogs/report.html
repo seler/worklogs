@@ -69,6 +69,7 @@
 			<li><a href="#tasks_per_day">{% trans "tasks per day" %}</a></li>
 			<li><a href="#time_per_project">{% trans "time per project" %}</a></li>
 			<li><a href="#tasks_eta">{% trans "tasks eta" %}</a></li>
+			<li><a href="#tasks_per_project">{% trans "tasks per project" %}</a></li>
 		</ul>
 		<div id="time_per_task">
 			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
@@ -79,8 +80,9 @@
 		</div>
 		<div id="tasks_status">
 			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
-{% endif %}{% for task, duration in time_per_task %}
-{{ task.bugtracker_url }} - {{ task.get_state_display }}
+{% endif %}{% for task, duration in tasks_by_status %}
+{{ task.description }} - {{ task.get_state_display }}
+{{ task.bugtracker_url }}
 {% endfor %}</textarea>
 		</div>
 
@@ -101,6 +103,16 @@
 		<div id="tasks_eta">
 			<textarea class="copy" rows="24" cols="80">{% for task in tasks %}{{ task.bugtracker_url }}: {{ task.eta }}h
 {% endfor %}</textarea>
+		</div>
+        <div id="tasks_per_project">
+            {% regroup tasks by project as tasks_per_project %}
+			<textarea class="copy" rows="24" cols="80">{% if from != to %}{{ from }} - {{ to }}
+{% endif %}{% for project in tasks_per_project %}
+{{ project.grouper }}:
+{% for task in project.list %}
+{{ task.description }} - {{ task.get_state_display }}
+{{ task.bugtracker_url }}
+{% endfor %}{% endfor %}</textarea>
 		</div>
 	</div>
 	{% else %}

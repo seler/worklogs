@@ -22,6 +22,24 @@ def firstof(*items):
             return i
 
 
+class Client(models.Model):
+
+    login = models.CharField(max_length=255, verbose_name=_(u"login"))
+    name = models.CharField(max_length=255, verbose_name=_(u"name"))
+    position = models.CharField(max_length=255, verbose_name=_(u"position"))
+    phone = models.CharField(max_length=255, verbose_name=_(u"phone"))
+    email = models.CharField(max_length=255, verbose_name=_(u"email"))
+    xmpp = models.CharField(max_length=255, verbose_name=_(u"xmpp"))
+
+    class Meta:
+        verbose_name = _(u"client")
+        verbose_name_plural = _(u"clients")
+        ordering = ['login']
+
+    def __unicode__(self):
+        return self.name
+
+
 class Task(models.Model):
     STATE_NEW = 0
     STATE_IN_PROGRESS = 1
@@ -30,69 +48,77 @@ class Task(models.Model):
     STATE_RESOLVED = 4
     STATE_CLOSED = 5
     STATE_REJECTED = 6
+    STATE_NOTFORME = 7
 
-    STATE_CHOICES = (\
-        (STATE_NEW, _(u"new")),
-        (STATE_IN_PROGRESS, _(u"in progress")),
-        (STATE_WAITING, _(u"waiting")),
-        (STATE_READY, _(u"ready")),
-        (STATE_RESOLVED, _(u"resolved")),
-        (STATE_CLOSED, _(u"closed")),
-        (STATE_REJECTED, _(u"rejected")),
+    STATE_CHOICES = (
+        (STATE_NEW, _(u"nowy")),
+        (STATE_IN_PROGRESS, _(u"w trakcie")),
+        (STATE_WAITING, _(u"czekam")),
+        (STATE_READY, _(u"gotowy")),
+        (STATE_RESOLVED, _(u"rozwiązany")),
+        (STATE_CLOSED, _(u"zamknięty")),
+        (STATE_REJECTED, _(u"odrzucony")),
+        (STATE_NOTFORME, _(u"dla grafika")),
     )
 
     active = models.BooleanField(verbose_name=_(u'active'))
 
     description = models.CharField(
-                    max_length=1024,
-                    verbose_name=_(u'description'))
+        max_length=1024,
+        verbose_name=_(u'description'))
 
     user = models.ForeignKey('auth.User',
-                    verbose_name=_(u'user'),
-                    related_name='tasks')
+                             verbose_name=_(u'user'),
+                             related_name='tasks')
 
     project = models.ForeignKey('Project',
-                    verbose_name=_(u'project'),
-                    related_name='tasks',
-                    blank=True,
-                    null=True)
+                                verbose_name=_(u'project'),
+                                related_name='tasks',
+                                blank=True,
+                                null=True)
 
     bugtracker = models.ForeignKey('BugTracker',
-            blank=True,
-            null=True,
-            verbose_name=_(u'bugtracker'),
-            related_name='tasks')
+                                   blank=True,
+                                   null=True,
+                                   verbose_name=_(u'bugtracker'),
+                                   related_name='tasks')
 
     bugtracker_object_id = models.CharField(
-            blank=True,
-            null=True,
-            max_length=16,
-            verbose_name=_(u"bugtracker object id"))
+        blank=True,
+        null=True,
+        max_length=16,
+        verbose_name=_(u"bugtracker object id"))
 
     duration = models.PositiveIntegerField(
-                    blank=True,
-                    null=True,
-                    verbose_name=_(u"duration"))
+        blank=True,
+        null=True,
+        verbose_name=_(u"duration"))
 
     add_date = models.DateTimeField(
-                    auto_now_add=True,
-                    verbose_name=_(u'date added'))
+        auto_now_add=True,
+        verbose_name=_(u'date added'))
 
     mod_date = models.DateTimeField(
-                    auto_now=True,
-                    verbose_name=_(u'date modified'))
+        auto_now=True,
+        verbose_name=_(u'date modified'))
 
     state = models.PositiveSmallIntegerField(
-                default=STATE_NEW,
-                choices=STATE_CHOICES,
-                verbose_name=_(u"state"))
+        default=STATE_NEW,
+        choices=STATE_CHOICES,
+        verbose_name=_(u"state"))
 
     eta = models.DecimalField(
-            blank=True,
-            decimal_places=4,
-            max_digits=8,
-            null=True,
-            verbose_name=_(u"eta (hours)"))
+        blank=True,
+        decimal_places=4,
+        max_digits=8,
+        null=True,
+        verbose_name=_(u"eta (hours)"))
+
+    client = models.ForeignKey(
+        to='Client',
+        blank=True,
+        null=True,
+        verbose_name=_(u"client"))
 
     objects = TaskManager()
 
@@ -184,31 +210,31 @@ class Task(models.Model):
 
 class WorkLog(models.Model):
     active = models.BooleanField(
-            default=True,
-            verbose_name=_(u'active'))
+        default=True,
+        verbose_name=_(u'active'))
 
     description = models.CharField(
-                    blank=True,
-                    null=True,
-                    max_length=1024,
-                    verbose_name=_(u'description'))
+        blank=True,
+        null=True,
+        max_length=1024,
+        verbose_name=_(u'description'))
 
     task = models.ForeignKey('Task',
-                    verbose_name=_(u'task'),
-                    related_name='worklogs')
+                             verbose_name=_(u'task'),
+                             related_name='worklogs')
 
     start = models.DateTimeField(
-                    default=datetime.datetime.now,
-                    verbose_name=_(u'start time'))
+        default=datetime.datetime.now,
+        verbose_name=_(u'start time'))
 
     end = models.DateTimeField(
-                    blank=True,
-                    null=True,
-                    verbose_name=_(u'end time'))
+        blank=True,
+        null=True,
+        verbose_name=_(u'end time'))
 
     accounted = models.BooleanField(
-            default=False,
-            verbose_name=_(u"accounted"))
+        default=False,
+        verbose_name=_(u"accounted"))
 
     objects = WorkLogManager()
 
@@ -245,13 +271,13 @@ class Project(models.Model):
     active = models.BooleanField(verbose_name=_(u'active'))
 
     name = models.CharField(
-                    max_length=64,
-                    verbose_name=_(u'name'))
+        max_length=64,
+        verbose_name=_(u'name'))
 
     url = models.URLField(
-            blank=True,
-            null=True,
-            verbose_name=_(u"url"))
+        blank=True,
+        null=True,
+        verbose_name=_(u"url"))
 
     class Meta:
         verbose_name = _(u'project')
@@ -268,12 +294,12 @@ class BugTracker(models.Model):
     active = models.BooleanField(verbose_name=_(u'active'))
 
     name = models.CharField(
-                    max_length=64,
-                    verbose_name=_(u'name'))
+        max_length=64,
+        verbose_name=_(u'name'))
 
     url_pattern = models.CharField(
-                    max_length=256,
-                    verbose_name=_(u'url_pattern'))
+        max_length=256,
+        verbose_name=_(u'url_pattern'))
 
     class Meta:
         verbose_name = _(u'bugtracker')
@@ -285,19 +311,19 @@ class BugTracker(models.Model):
 
 class Note(models.Model):
     task = models.ForeignKey('Task',
-            related_name='notes',
-            verbose_name=_(u"task"))
+                             related_name='notes',
+                             verbose_name=_(u"task"))
 
     note = models.TextField(
-            verbose_name=_(u"note"))
+        verbose_name=_(u"note"))
 
     add_date = models.DateTimeField(
-                    auto_now_add=True,
-                    verbose_name=_(u'date added'))
+        auto_now_add=True,
+        verbose_name=_(u'date added'))
 
     mod_date = models.DateTimeField(
-                    auto_now=True,
-                    verbose_name=_(u'date modified'))
+        auto_now=True,
+        verbose_name=_(u'date modified'))
 
     class Meta:
         verbose_name = _(u'note')

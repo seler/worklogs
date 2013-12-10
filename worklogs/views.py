@@ -65,6 +65,7 @@ def make_tasks(request):
         form = TasksForm(request.POST)
         if form.is_valid():
             tickets = re.findall(r'\d{5,8}', form.cleaned_data.get('message'))
+            tickets = set(map(int, tickets))
             for ticket in tickets:
                 try:
                     task = make_mantis_task(ticket)
@@ -168,6 +169,7 @@ def report(request):
         'tasks_per_day': tasks_per_day,
         'time_per_project': time_per_project,
         'time_per_task': time_per_task,
+        'tasks_by_status': sorted(time_per_task, key=lambda x: x[0].state),
         'worklogs_plot': worklogs_plot,
         'worklogs_plot_start': from_date.date() - datetime.timedelta(days=1),
         'worklogs_plot_end': to_date.date() + datetime.timedelta(days=1),

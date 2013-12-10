@@ -2,9 +2,7 @@
 # Django settings for ClipTube project.
 
 import os
-import sys
 PROJECT_PATH = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(PROJECT_PATH)
 
 DEBUG = False
 TEMPLATE_DEBUG = False
@@ -23,14 +21,14 @@ MANAGERS = (
 INTERNAL_IPS = ('127.0.0.1',)
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-        "django.contrib.auth.context_processors.auth",
-        "django.core.context_processors.debug",
-        "django.core.context_processors.i18n",
-        "django.core.context_processors.media",
-        "django.core.context_processors.static",
-        "django.contrib.messages.context_processors.messages",
-        'django.core.context_processors.request',
-        )
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.contrib.messages.context_processors.messages",
+    'django.core.context_processors.request',
+)
 
 API_IPS = (
     '127.0.0.1',
@@ -61,15 +59,14 @@ MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 
 MEDIA_URL = '/media/'
 
-# STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 
 STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 STATICFILES_DIRS = (
-    os.path.join(PROJECT_PATH, 'static'),
+    os.path.join(PROJECT_PATH, 'layout'),
 )
 
 STATICFILES_FINDERS = (
@@ -122,27 +119,27 @@ ugettext = lambda s: s
 
 
 TINYMCE_DEFAULT_CONFIG = {
-        'theme': 'advanced',
-        'plugins': 'fullscreen,media,advlink,table,save,advimage,paste',
-        'theme_advanced_buttons1': "save,|, bold,italic,underline,"
-                                   "strikethrough,|,justifyleft,justifycenter,"
-                                   "justifyright,justifyfull,|,styleselect,"
-                                   "formatselect,fontselect,fontsizeselect,"
-                                   "fullscreen,|,forecolor,backcolor",
-        'theme_advanced_buttons2': "image, |, cut,copy,paste,pastetext,"
-                                   "pasteword,|,search,replace,|,bullist,"
-                                   "numlist,|,outdent,indent,blockquote,|,"
-                                   "undo,redo,|,link,unlink,anchor,"
-                                   "tablecontrols, code",
-        'theme_advanced_toolbar_location': "top",
-        'theme_advanced_toolbar_align': "left",
-        'theme_advanced_toolbar_align': "left",
-        'theme_advanced_statusbar_location': "bottom",
-        'theme_advanced_resizing': 'true',
-        'language': 'pl',
-        'content_css': MEDIA_URL + "css/tiny_mce_content.css",
-        'entity_encoding': 'raw',
-        }
+    'theme': 'advanced',
+    'plugins': 'fullscreen,media,advlink,table,save,advimage,paste',
+    'theme_advanced_buttons1': "save,|, bold,italic,underline,"
+    "strikethrough,|,justifyleft,justifycenter,"
+    "justifyright,justifyfull,|,styleselect,"
+    "formatselect,fontselect,fontsizeselect,"
+    "fullscreen,|,forecolor,backcolor",
+    'theme_advanced_buttons2': "image, |, cut,copy,paste,pastetext,"
+    "pasteword,|,search,replace,|,bullist,"
+    "numlist,|,outdent,indent,blockquote,|,"
+    "undo,redo,|,link,unlink,anchor,"
+    "tablecontrols, code",
+    'theme_advanced_toolbar_location': "top",
+    'theme_advanced_toolbar_align': "left",
+    'theme_advanced_toolbar_align': "left",
+    'theme_advanced_statusbar_location': "bottom",
+    'theme_advanced_resizing': 'true',
+    'language': 'pl',
+    'content_css': MEDIA_URL + "css/tiny_mce_content.css",
+    'entity_encoding': 'raw',
+}
 
 LOGGING = {
     'version': 1,

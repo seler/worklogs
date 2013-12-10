@@ -3,11 +3,15 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin.templatetags.admin_list import _boolean_icon
 
-from .models import Task, WorkLog, Project, BugTracker, Note
+from .models import Task, WorkLog, Project, BugTracker, Note, Client
 from .urls import task_admin_urls
 from .forms import TaskAddForm
-from .list_filters import StateListFilters
+from .list_filters import StateListFilters, CurrentWeekListFilter
 from django.contrib import messages
+
+
+class ClientAdmin(admin.ModelAdmin):
+    pass
 
 
 class WorkLogInlineAdmin(admin.TabularInline):
@@ -23,13 +27,26 @@ class NoteInlineAdmin(admin.StackedInline):
     readonly_fields = ('add_date', 'mod_date')
 
 
+def status_closed_action(modeladmin, request, queryset):
+    for obj in queryset:
+        if obj.state == Task.STATE_CLOSED:
+            obj.state = Task.STATE_CLOSED
+            try:
+                obj.save()
+            except Exception, e:
+                messages.error(request, _(u'Task "{0}" not closed: {1}').format(obj, e))
+            else:
+                messages.success(request, _(u'Task "{0}" closed.').format(obj))
+status_closed_action.short_description = _(u"Close tasks")
+
+
 class TaskAdmin(admin.ModelAdmin):
     add_form = TaskAddForm
-    date_hierarchy = 'mod_date'
+    date_hierarchy = 'add_date'
     list_display = (
-        'get_bugtracker_id',
         'description',
         'project_link',
+        'client_link',
         'get_bugtracker_link',
         'get_duration_display',
         'mod_date',
@@ -37,10 +54,11 @@ class TaskAdmin(admin.ModelAdmin):
         'toggle_active_button',
         'accounted',
     )
+    actions = (status_closed_action, )
     ordering = ('-add_date',)
     inlines = (WorkLogInlineAdmin, NoteInlineAdmin)
     list_editable = ('state',)
-    list_filter = StateListFilters + ['project', 'state', 'bugtracker']
+    list_filter = StateListFilters + [CurrentWeekListFilter, 'project', 'state', 'bugtracker']
     list_select_related = True
     search_fields = ('description',
                      'worklogs__description',
@@ -75,6 +93,15 @@ class TaskAdmin(admin.ModelAdmin):
             return '-'
     accounted.short_description = _(u"accounted")
     accounted.allow_tags = True
+
+    def client_link(self, task):
+        if task.client:
+            return "<a href=\"/worklogs/client/%d/\">%s</a>" % \
+                   (task.client.id, task.client.name)
+        else:
+            return '-'
+    client_link.short_description = _(u"Zleceniodawca")
+    client_link.allow_tags = True
 
     def toggle_active_button(self, task):
         if task.active:
@@ -269,3 +296,4 @@ class WorkLogAdmin(admin.ModelAdmin):
 admin.site.register(Task, TaskAdmin)
 admin.site.register(WorkLog, WorkLogAdmin)
 admin.site.register((Project, BugTracker))
+admin.site.register(Client, ClientAdmin)

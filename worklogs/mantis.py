@@ -135,9 +135,20 @@ from django.contrib.auth.models import User
 
 
 def get_mantis_page(mantis_id):
-    # cookies chcialem zeby byly globalnie, ale wtedy mantis nie chce logowac przy wchodzeniu  na drugi ticket :/
-    C = Cookie.SimpleCookie()
     url = "http://intranet.grupazpr.pl/apps/mantis/view.php?id={0}".format(mantis_id)
+    return get_intranet_page(url)
+
+
+def get_intranet_page(url):
+    return get_intranet_response(url).read()
+
+
+def get_intranet_response(url, cookie=None):
+    # cookies chcialem zeby byly globalnie, ale wtedy mantis nie chce logowac przy wchodzeniu  na drugi ticket :/
+    if cookie is None:
+        C = Cookie.SimpleCookie()
+    else:
+        C = cookie
 
     def _request(url):
         url = url.replace(' ', '%20')
@@ -154,8 +165,7 @@ def get_mantis_page(mantis_id):
             return response
 
     response = _request(url)
-    content = response.read()
-    return content
+    return response
 
 
 from lxml import html
@@ -185,11 +195,72 @@ def make_mantis_task(mantis_id):
     bugtracker = BugTracker.objects.get(name="mantis")
     ticket = get_mantis_ticket(mantis_id)
     task = Task()
-    task.description = ticket.get('description')
+    task.description = ticket.get('description').strip().lstrip('0').lstrip(str(mantis_id)).lstrip(':').lstrip()
     task.project, created = Project.objects.get_or_create(name=ticket.get('project_name'))
-    task.client = ticket.get('client')
+    task.client = get_client_object(ticket.get('client'))
     task.user = User.objects.get(username="rselewonko")
     task.bugtracker = bugtracker
     task.bugtracker_object_id = mantis_id
     task.save()
     return task
+
+
+def get_user_data(login):
+    url = r"http://intranet.grupazpr.pl/apps/KsiazkaTelefoniczna/Uzytkownicy"
+    cookie = Cookie.SimpleCookie()
+    response = get_intranet_response(url, cookie)
+
+    from ClientForm import ParseResponse
+
+    forms = ParseResponse(response, backwards_compat=False)
+
+    form = forms[0]
+    form['Login'] = login
+
+    request = form.click()
+    request.add_header('Cookie', cookie.output(header=""))
+    response = urllib2.urlopen(request)
+    content = unicode(response.read(), 'utf-8')
+
+    if not response.code == 200:
+        raise Exception('lipa: %i.' % response.code)
+
+    root = html.fromstring(content)
+
+    xpaths = {
+        'name': 'body/div[1]/div[2]/div[1]/div/div/div/div/div/table/tr[2]/td[1]',
+        'login': 'body/div[1]/div[2]/div[1]/div/div/div/div/div/table/tr[2]/td[2]',
+        'position': 'body/div[1]/div[2]/div[1]/div/div/div/div/div/table/tr[2]/td[3]',
+        'phone': 'body/div[1]/div[2]/div[1]/div/div/div/div/div/table/tr[2]/td[4]',
+    }
+    ret = {}
+
+    for key, xpath in xpaths.items():
+        try:
+            ret[key] = root.find(xpath).text
+        except AttributeError:
+            ret[key] = None
+
+    # wybieranie maila i jida
+    xpath = 'body/div[1]/div[2]/div[1]/div/div/div/div/div/table/tr[2]/td[5]/a'
+    for href in map(lambda e: e.get('href'), root.findall(xpath)):
+        if href.startswith('mailto:'):
+            ret['email'] = href.lstrip('mailto:')
+        if href.startswith('xmpp:'):
+            ret['xmpp'] = href.lstrip('xmpp:')
+
+    return ret
+
+
+def get_client_object(login):
+    from .models import Client
+    client, created = Client.objects.get_or_create(login=login)
+    if created:
+        data = get_user_data(login)
+        client.name = data.get('name')
+        client.position = data.get('position')
+        client.phone = data.get('phone')
+        client.email = data.get('email')
+        client.xmpp = data.get('xmpp')
+        client.save()
+    return client
